@@ -24,7 +24,7 @@ public class MyGame extends VariableFrameRateGame {
 
     public MyGame() {
         super();
-		System.out.println("press T to render triangles");
+		System.out.println("press t to render triangles");
 		System.out.println("press L to render lines");
 		System.out.println("press P to render points");
 		System.out.println("press C to increment counter");

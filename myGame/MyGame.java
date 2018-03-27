@@ -84,9 +84,6 @@ public class MyGame extends VariableFrameRateGame {
 		SceneNode plightNode = sm.getRootSceneNode().createChildSceneNode("plightNode");
         plightNode.attachObject(plight);
 
-        RotationController rc = new RotationController(Vector3f.createUnitVectorY(), .02f);
-        rc.addNode(dolphinN);
-        sm.addController(rc);
     }
 
     @Override

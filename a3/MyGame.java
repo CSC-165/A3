@@ -70,7 +70,10 @@ public class MyGame extends VariableFrameRateGame {
         dolphinE.setPrimitive(Primitive.TRIANGLES);
 
         SceneNode dolphinN = sm.getRootSceneNode().createChildSceneNode(dolphinE.getName() + "Node");
+        Angle faceFront = Degreef.createFrom(180.0f);
+        
         dolphinN.moveBackward(2.0f);
+        dolphinN.yaw(faceFront);
         dolphinN.attachObject(dolphinE);
 
         sm.getAmbientLight().setIntensity(new Color(.1f, .1f, .1f));

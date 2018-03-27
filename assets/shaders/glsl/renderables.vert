@@ -1,4 +1,4 @@
-#version 430 core
+#version 410 core
 
 // stage input(s)
 layout (location = 0) in vec3 vertex_position;

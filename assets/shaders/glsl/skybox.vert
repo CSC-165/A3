@@ -20,6 +20,9 @@ void main()
         vec3(-1.0,  1.0, 1.0),
         vec3( 1.0,  1.0, 1.0)
     );
-    vs_out.texcoord = mat3(matrix.view) * vertices[gl_VertexID];
+	mat3 v = mat3(matrix.view[0][0], matrix.view[1][0], matrix.view[2][0],
+	              matrix.view[0][1], matrix.view[1][1], matrix.view[2][1],
+				 -matrix.view[0][2],-matrix.view[1][2],-matrix.view[2][2]);
+    vs_out.texcoord = v * vertices[gl_VertexID];
     gl_Position     = vec4(vertices[gl_VertexID], 1.0);
 }

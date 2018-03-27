@@ -14,8 +14,6 @@ out vertex_t
     vec2 vertex_texcoord;       // in texture-space
     vec3 vertex_position;       // in camera/view-space
     vec3 vertex_normal;         // in camera/view-space
-    vec3 vertex_bone_indices;     // indices of each bone that affects this vertex ( up to 3 bones) (0 with weight 0 for unassigned)
-    vec3 vertex_bone_weights;    // bone weights for each of the 3 bones bone (x + y + z = 1.0)
 } vs_out;
 
 // uniform(s)/structure(s)
@@ -24,8 +22,8 @@ uniform struct matrix_t {
     mat4 projection;            // transforms vertices into clip-space
     mat4 normal;                // inverse transpose of model-view matrix
 
-    mat4 skin_matrices[256];     // Skinning Matrices (supports up to 256 bones)
-    mat3 skin_matrices_IT[256];   // IT of Skinning Matrices (used for transforming vertex normals)
+    mat4 skin_matrices[128];     // Skinning Matrices (supports up to 128 bones)
+    mat3 skin_matrices_IT[128];   // IT of Skinning Matrices (used for transforming vertex normals)
 } matrix;
 
 //TODO: list of bone matrices

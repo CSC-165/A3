@@ -1,1 +1,1 @@
-javac myGame\*.java
+javac a3\*.java

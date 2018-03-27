@@ -21,38 +21,51 @@ public class MyGame extends VariableFrameRateGame {
 	float elapsTime = 0.0f;
 	String elapsTimeStr, counterStr, dispStr;
 	int elapsTimeSec, counter = 0;
+   
+   private MoveForwardAction moveForwardAction;
+   private MoveBackwardAction moveBackwardAction;
+   private MoveLeftAction moveLeftAction;
+   private MoveRightAction moveRightAction;
 
-    public MyGame() {
-        super();
+   public MyGame() {
+      super();
 		System.out.println("press t to render triangles");
 		System.out.println("press L to render lines");
 		System.out.println("press P to render points");
 		System.out.println("press C to increment counter");
-    }
+      
+      System.out.println("W to move forward");
+      System.out.println("S to move backwards");
+      System.out.println("A to move left");
+      System.out.println("D to move right\n");
+   }
 
-    public static void main(String[] args) {
-        Game game = new MyGame();
-        try {
-            game.startup();
-            game.run();
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-        } finally {
-            game.shutdown();
-            game.exit();
-        }
-    }
+   public static void main(String[] args) {
+      Game game = new MyGame();
+      try {
+         game.startup();
+         game.run();
+      } catch (Exception e) {
+         e.printStackTrace(System.err);
+      } finally {
+         game.shutdown();
+         game.exit();
+      }
+   }
 	
 	@Override
 	protected void setupWindow(RenderSystem rs, GraphicsEnvironment ge) {
-		rs.createRenderWindow(new DisplayMode(1000, 700, 24, 60), false);
+		//rs.createRenderWindow(new DisplayMode(1000, 700, 24, 60), false);
+      
+      /* Makes game fullscreen */
+      rs.createRenderWindow(true);
 	}
 
-    @Override
-    protected void setupCameras(SceneManager sm, RenderWindow rw) {
-        SceneNode rootNode = sm.getRootSceneNode();
-        Camera camera = sm.createCamera("MainCamera", Projection.PERSPECTIVE);
-        rw.getViewport(0).setCamera(camera);
+   @Override
+   protected void setupCameras(SceneManager sm, RenderWindow rw) {
+      SceneNode rootNode = sm.getRootSceneNode();
+      Camera camera = sm.createCamera("MainCamera", Projection.PERSPECTIVE);
+      rw.getViewport(0).setCamera(camera);
 		
 		camera.setRt((Vector3f)Vector3f.createFrom(1.0f, 0.0f, 0.0f));
 		camera.setUp((Vector3f)Vector3f.createFrom(0.0f, 1.0f, 0.0f));
@@ -60,39 +73,39 @@ public class MyGame extends VariableFrameRateGame {
 		
 		camera.setPo((Vector3f)Vector3f.createFrom(0.0f, 0.0f, 0.0f));
 
-        SceneNode cameraNode = rootNode.createChildSceneNode(camera.getName() + "Node");
-        cameraNode.attachObject(camera);
-    }
+      SceneNode cameraNode = rootNode.createChildSceneNode(camera.getName() + "Node");
+      cameraNode.attachObject(camera);
+   }
 	
-    @Override
-    protected void setupScene(Engine eng, SceneManager sm) throws IOException {
-        Entity dolphinE = sm.createEntity("myDolphin", "dolphinHighPoly.obj");
-        dolphinE.setPrimitive(Primitive.TRIANGLES);
+   @Override
+   protected void setupScene(Engine eng, SceneManager sm) throws IOException {
+      Entity dolphinE = sm.createEntity("myDolphin", "dolphinHighPoly.obj");
+      dolphinE.setPrimitive(Primitive.TRIANGLES);
 
-        SceneNode dolphinN = sm.getRootSceneNode().createChildSceneNode(dolphinE.getName() + "Node");
-        Angle faceFront = Degreef.createFrom(180.0f);
+      SceneNode dolphinN = sm.getRootSceneNode().createChildSceneNode(dolphinE.getName() + "Node");
+      Angle faceFront = Degreef.createFrom(180.0f);
         
-        dolphinN.moveBackward(2.0f);
-        dolphinN.yaw(faceFront);
-        dolphinN.attachObject(dolphinE);
+      dolphinN.moveBackward(2.0f);
+      dolphinN.yaw(faceFront);
+      dolphinN.attachObject(dolphinE);
 
-        sm.getAmbientLight().setIntensity(new Color(.1f, .1f, .1f));
+      sm.getAmbientLight().setIntensity(new Color(.1f, .1f, .1f));
 		
 		Light plight = sm.createLight("testLamp1", Light.Type.POINT);
 		plight.setAmbient(new Color(.3f, .3f, .3f));
-        plight.setDiffuse(new Color(.7f, .7f, .7f));
+      plight.setDiffuse(new Color(.7f, .7f, .7f));
 		plight.setSpecular(new Color(1.0f, 1.0f, 1.0f));
-        plight.setRange(5f);
+      plight.setRange(5f);
 		
 		SceneNode plightNode = sm.getRootSceneNode().createChildSceneNode("plightNode");
-        plightNode.attachObject(plight);
+      plightNode.attachObject(plight);
 
-    }
+   }
 
-    @Override
-    protected void update(Engine engine) {
+   @Override
+   protected void update(Engine engine) {
 		// build and set HUD
-		rs = (GL4RenderSystem) engine.getRenderSystem();
+	   rs = (GL4RenderSystem) engine.getRenderSystem();
 		elapsTime += engine.getElapsedTimeMillis();
 		elapsTimeSec = Math.round(elapsTime/1000.0f);
 		elapsTimeStr = Integer.toString(elapsTimeSec);
@@ -101,23 +114,23 @@ public class MyGame extends VariableFrameRateGame {
 		rs.setHUD(dispStr, 15, 15);
 	}
 
-    @Override
-    public void keyPressed(KeyEvent e) {
-        Entity dolphin = getEngine().getSceneManager().getEntity("myDolphin");
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_L:
-                dolphin.setPrimitive(Primitive.LINES);
-                break;
-            case KeyEvent.VK_T:
-                dolphin.setPrimitive(Primitive.TRIANGLES);
-                break;
-            case KeyEvent.VK_P:
-                dolphin.setPrimitive(Primitive.POINTS);
-                break;
+   @Override
+   public void keyPressed(KeyEvent e) {
+      Entity dolphin = getEngine().getSceneManager().getEntity("myDolphin");
+      switch (e.getKeyCode()) {
+         case KeyEvent.VK_L:
+            dolphin.setPrimitive(Primitive.LINES);
+            break;
+         case KeyEvent.VK_T:
+            dolphin.setPrimitive(Primitive.TRIANGLES);
+            break;
+         case KeyEvent.VK_P:
+            dolphin.setPrimitive(Primitive.POINTS);
+            break;
 			case KeyEvent.VK_C:
 				counter++;
 				break;
-        }
-        super.keyPressed(e);
-    }
+      }
+      super.keyPressed(e);
+   }
 }

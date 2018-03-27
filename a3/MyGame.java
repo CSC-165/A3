@@ -55,7 +55,8 @@ public class MyGame extends VariableFrameRateGame {
 	
 	@Override
 	protected void setupWindow(RenderSystem rs, GraphicsEnvironment ge) {
-		//rs.createRenderWindow(new DisplayMode(1000, 700, 24, 60), false);
+		/* Makes game windowed mode */
+      //rs.createRenderWindow(new DisplayMode(1000, 700, 24, 60), false);
       
       /* Makes game fullscreen */
       rs.createRenderWindow(true);

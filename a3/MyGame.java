@@ -4,6 +4,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 
+import ray.input.GenericInputManager;
+import ray.input.InputManager;
 import ray.rage.*;
 import ray.rage.game.*;
 import ray.rage.rendersystem.*;
@@ -14,6 +16,8 @@ import ray.rage.scene.controllers.*;
 import ray.rml.*;
 import ray.rage.rendersystem.gl4.GL4RenderSystem;
 
+import myGameEngine.OrbitCameraController;
+
 public class MyGame extends VariableFrameRateGame {
 
 	// to minimize variable allocation in update()
@@ -22,10 +26,14 @@ public class MyGame extends VariableFrameRateGame {
 	String elapsTimeStr, counterStr, dispStr;
 	int elapsTimeSec, counter = 0;
    
+	private InputManager im;
+	
    private MoveForwardAction moveForwardAction;
    private MoveBackwardAction moveBackwardAction;
    private MoveLeftAction moveLeftAction;
    private MoveRightAction moveRightAction;
+   
+   private OrbitCameraController orbitController;
 
    public MyGame() {
       super();
@@ -75,12 +83,24 @@ public class MyGame extends VariableFrameRateGame {
 		camera.setPo((Vector3f)Vector3f.createFrom(0.0f, 0.0f, 0.0f));
 
       SceneNode cameraNode = rootNode.createChildSceneNode(camera.getName() + "Node");
+      camera.setMode('n');
+      camera.getFrustum().setFarClipDistance(1000.0f);
       cameraNode.attachObject(camera);
    }
 	
    @Override
    protected void setupScene(Engine eng, SceneManager sm) throws IOException {
-      Entity dolphinE = sm.createEntity("myDolphin", "dolphinHighPoly.obj");
+      im = new GenericInputManager();
+      
+      //temp object for perspective
+      Entity sphere1 = sm.createEntity("sphere1", "sphere.obj");
+      sphere1.setPrimitive(Primitive.TRIANGLES);
+      SceneNode sphere1Node = sm.getRootSceneNode().createChildSceneNode(sphere1.getName() + "Node");
+      sphere1Node.scale(0.1f,0.1f,0.1f);
+      sphere1Node.attachObject(sphere1);
+      sphere1Node.moveForward(2.0f);
+      
+	  Entity dolphinE = sm.createEntity("myDolphin", "dolphinHighPoly.obj");
       dolphinE.setPrimitive(Primitive.TRIANGLES);
 
       SceneNode dolphinN = sm.getRootSceneNode().createChildSceneNode(dolphinE.getName() + "Node");
@@ -92,15 +112,27 @@ public class MyGame extends VariableFrameRateGame {
 
       sm.getAmbientLight().setIntensity(new Color(.1f, .1f, .1f));
 		
-		Light plight = sm.createLight("testLamp1", Light.Type.POINT);
-		plight.setAmbient(new Color(.3f, .3f, .3f));
+      Light plight = sm.createLight("testLamp1", Light.Type.POINT);
+      plight.setAmbient(new Color(.3f, .3f, .3f));
       plight.setDiffuse(new Color(.7f, .7f, .7f));
-		plight.setSpecular(new Color(1.0f, 1.0f, 1.0f));
+      plight.setSpecular(new Color(1.0f, 1.0f, 1.0f));
       plight.setRange(5f);
 		
-		SceneNode plightNode = sm.getRootSceneNode().createChildSceneNode("plightNode");
+      SceneNode plightNode = sm.getRootSceneNode().createChildSceneNode("plightNode");
       plightNode.attachObject(plight);
+      
+      setupOrbitCameras(eng,sm);
 
+   }
+   
+   protected void setupOrbitCameras(Engine eng, SceneManager sm) {
+	   SceneNode dolphinN = sm.getSceneNode("myDolphinNode");
+	   SceneNode cameraN = sm.getSceneNode("MainCameraNode");
+	   Camera camera = sm.getCamera("MainCamera");
+	   String kbName = im.getKeyboardName();
+	   
+	   orbitController = new OrbitCameraController(camera, cameraN,
+			   dolphinN, kbName, im, this);
    }
 
    @Override
@@ -113,7 +145,19 @@ public class MyGame extends VariableFrameRateGame {
 		counterStr = Integer.toString(counter);
 		dispStr = "Time = " + elapsTimeStr + "   Keyboard hits = " + counterStr;
 		rs.setHUD(dispStr, 15, 15);
+		
+		im.update(elapsTime);
+		orbitController.updateCameraPosition();
 	}
+   
+   //distDetection takes two SceneNodes as parameters and
+   //returns the distance between the two as a vector.
+   public Vector3 distDetection(SceneNode temp, SceneNode other) {
+   	Vector3 vec1 = temp.getWorldPosition();
+   	Vector3 vec2 = other.getWorldPosition();
+   	Vector3 dist = vec1.sub(vec2);
+   	return dist;
+   }
 
    @Override
    public void keyPressed(KeyEvent e) {

@@ -70,26 +70,35 @@ public class OrbitCameraController {
 		
 		im.associateAction(cn, net.java.games.input.Component.Identifier.Key.L, 
 			orbitRightAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateAction(cn, net.java.games.input.Component.Identifier.Key.J, 
+		
+      im.associateAction(cn, net.java.games.input.Component.Identifier.Key.J, 
 			orbitLefttAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateAction(cn, net.java.games.input.Component.Identifier.Key.V, 
+		
+      im.associateAction(cn, net.java.games.input.Component.Identifier.Key.V, 
 			zoomIn, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateAction(cn, net.java.games.input.Component.Identifier.Key.B, 
+		
+      im.associateAction(cn, net.java.games.input.Component.Identifier.Key.B, 
 			zoomOut, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateAction(cn, net.java.games.input.Component.Identifier.Key.I, 
+		
+      im.associateAction(cn, net.java.games.input.Component.Identifier.Key.I, 
 			increaseElev, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateAction(cn, net.java.games.input.Component.Identifier.Key.K, 
+		
+      im.associateAction(cn, net.java.games.input.Component.Identifier.Key.K, 
 			decreaseElev, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		
 		im.associateAction(cn, net.java.games.input.Component.Identifier.Key.H, 
 			orbitTargRight, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateAction(cn, net.java.games.input.Component.Identifier.Key.F, 
+		
+      im.associateAction(cn, net.java.games.input.Component.Identifier.Key.F, 
 			orbitTargLeft, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateAction(cn, net.java.games.input.Component.Identifier.Key.T, 
+		
+      im.associateAction(cn, net.java.games.input.Component.Identifier.Key.T, 
 			incTargElev, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateAction(cn, net.java.games.input.Component.Identifier.Key.G, 
+		
+      im.associateAction(cn, net.java.games.input.Component.Identifier.Key.G, 
 			decTargElev, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateAction(cn, net.java.games.input.Component.Identifier.Key.E, 
+		
+      im.associateAction(cn, net.java.games.input.Component.Identifier.Key.E, 
 			modifyElev, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 	}
 	

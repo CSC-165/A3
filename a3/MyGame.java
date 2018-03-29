@@ -32,20 +32,20 @@ public class MyGame extends VariableFrameRateGame {
    private MoveBackwardAction moveBackwardAction;
    private MoveLeftAction moveLeftAction;
    private MoveRightAction moveRightAction;
+   private RotateLeftAction rotateLeftAction;
+   private RotateRightAction rotateRightAction;
    
    private OrbitCameraController orbitController;
 
    public MyGame() {
       super();
-		System.out.println("press t to render triangles");
-		System.out.println("press L to render lines");
-		System.out.println("press P to render points");
-		System.out.println("press C to increment counter");
-      
       System.out.println("W to move forward");
       System.out.println("S to move backwards");
       System.out.println("A to move left");
       System.out.println("D to move right\n");
+      
+      System.out.println("Q to rotate left");
+      System.out.println("Z to rotate right");
    }
 
    public static void main(String[] args) {
@@ -100,11 +100,11 @@ public class MyGame extends VariableFrameRateGame {
       sphere1Node.attachObject(sphere1);
       sphere1Node.moveForward(2.0f);
       
-	  Entity dolphinE = sm.createEntity("myDolphin", "dolphinHighPoly.obj");
+	   Entity dolphinE = sm.createEntity("myDolphin", "dolphinHighPoly.obj");
       dolphinE.setPrimitive(Primitive.TRIANGLES);
 
       SceneNode dolphinN = sm.getRootSceneNode().createChildSceneNode(dolphinE.getName() + "Node");
-      Angle faceFront = Degreef.createFrom(180.0f);
+      Angle faceFront = Degreef.createFrom(45.0f);
         
       dolphinN.moveBackward(2.0f);
       dolphinN.yaw(faceFront);
@@ -121,6 +121,7 @@ public class MyGame extends VariableFrameRateGame {
       SceneNode plightNode = sm.getRootSceneNode().createChildSceneNode("plightNode");
       plightNode.attachObject(plight);
       
+      setupInputs(sm);
       setupOrbitCameras(eng,sm);
 
    }
@@ -133,6 +134,58 @@ public class MyGame extends VariableFrameRateGame {
 	   
 	   orbitController = new OrbitCameraController(camera, cameraN,
 			   dolphinN, kbName, im, this);
+   }
+   
+   protected void setupInputs(SceneManager sm) {
+      im = new GenericInputManager();
+      
+      String keyboard1 = im.getKeyboardName();
+      String gamePad1 = im.getFirstGamepadName();
+      
+      SceneNode dolphinN = getEngine().getSceneManager().getSceneNode("myDolphinNode");
+      
+      moveForwardAction = new MoveForwardAction(dolphinN);
+      moveBackwardAction = new MoveBackwardAction(dolphinN);
+      moveLeftAction = new MoveLeftAction(dolphinN);
+      moveRightAction = new MoveRightAction(dolphinN);
+      rotateLeftAction = new RotateLeftAction(dolphinN);
+      rotateRightAction = new RotateRightAction(dolphinN);
+      
+      System.out.println("Keyboard: " + keyboard1);
+      System.out.println("Gamepad: " + gamePad1);
+      
+      //Keyboard associations
+      im.associateAction(keyboard1, 
+                         net.java.games.input.Component.Identifier.Key.W, 
+                         moveForwardAction,
+                         InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+                         
+      im.associateAction(keyboard1, 
+                         net.java.games.input.Component.Identifier.Key.S, 
+                         moveBackwardAction,
+                         InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+                         
+      im.associateAction(keyboard1, 
+                         net.java.games.input.Component.Identifier.Key.A, 
+                         moveLeftAction,
+                         InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+                         
+      im.associateAction(keyboard1, 
+                         net.java.games.input.Component.Identifier.Key.D, 
+                         moveRightAction,
+                         InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+                         
+      im.associateAction(keyboard1, 
+                         net.java.games.input.Component.Identifier.Key.Q, 
+                         rotateLeftAction,
+                         InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+                         
+      im.associateAction(keyboard1, 
+                         net.java.games.input.Component.Identifier.Key.Z, 
+                         rotateRightAction,
+                         InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+
+
    }
 
    @Override
@@ -163,7 +216,7 @@ public class MyGame extends VariableFrameRateGame {
    public void keyPressed(KeyEvent e) {
       Entity dolphin = getEngine().getSceneManager().getEntity("myDolphin");
       switch (e.getKeyCode()) {
-         case KeyEvent.VK_L:
+        /* case KeyEvent.VK_L:
             dolphin.setPrimitive(Primitive.LINES);
             break;
          case KeyEvent.VK_T:
@@ -174,7 +227,7 @@ public class MyGame extends VariableFrameRateGame {
             break;
 			case KeyEvent.VK_C:
 				counter++;
-				break;
+				break;*/
       }
       super.keyPressed(e);
    }

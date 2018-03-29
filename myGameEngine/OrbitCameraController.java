@@ -61,7 +61,6 @@ public class OrbitCameraController {
 		Action zoomOut = new ZoomOutAction();
 		Action increaseElev = new IncreaseElevAngle();
 		Action decreaseElev = new DecreaseElevAngle();
-		Action modifyElev = new ModifyElevAngle();
 		
 		Action orbitTargRight = new OrbitRightWithTarg();
 		Action orbitTargLeft = new OrbitLeftWithTarg();
@@ -97,9 +96,6 @@ public class OrbitCameraController {
 		
       im.associateAction(cn, net.java.games.input.Component.Identifier.Key.G, 
 			decTargElev, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		
-      im.associateAction(cn, net.java.games.input.Component.Identifier.Key.E, 
-			modifyElev, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 	}
 	
 	private class OrbitAroundRightAction implements Action{
@@ -187,54 +183,16 @@ public class OrbitCameraController {
 		
 		public void performAction(float time, net.java.games.input.Event ev) {
 			float factor = 1.0f;
-			if (camElevation <= 5.0f) {
-				camElevation = 5.0f;
+			if (camElevation <= 0.0f) {
+				camElevation = 0.0f;
 			}else {
 				camElevation -= factor;
 			}
 			updateCameraPosition();
 		}
 	}
-	 
-	private class ModifyElevAngle implements Action{
-		
-		public void performAction(float time, net.java.games.input.Event ev) {
-			float rotAmount;
-			if (ev.getValue() < -0.75) {
-				rotAmount = -0.75f;
-			}else {
-				if (ev.getValue() > 0.75) {
-					rotAmount = 0.75f;
-				}else {
-					rotAmount = 0.0f;
-				}
-			}
-			camElevation += rotAmount;
-			updateCameraPosition();
-		}
-	}
 	
 	private class OrbitRightWithTarg implements Action{
-		
-		public void performAction(float time, net.java.games.input.Event ev) {
-			float rotAmount;
-			if (ev.getValue() < -0.75) {
-				rotAmount = -0.75f;
-			}else {
-				if (ev.getValue() > 0.75) {
-					rotAmount = 0.75f;
-				}else {
-					rotAmount = 0.0f;
-				}
-			}
-			camAzimuth += rotAmount;
-			camAzimuth = camAzimuth % 360;
-			updateCameraPosition();
-			updateTargetPosition();
-		}
-	}
-	
-	private class OrbitLeftWithTarg implements Action{
 		
 		public void performAction(float time, net.java.games.input.Event ev) {
 			float rotAmount;
@@ -254,14 +212,34 @@ public class OrbitCameraController {
 		}
 	}
 	
+	private class OrbitLeftWithTarg implements Action{
+		
+		public void performAction(float time, net.java.games.input.Event ev) {
+			float rotAmount;
+			if (ev.getValue() < -0.75) {
+				rotAmount = -0.75f;
+			}else {
+				if (ev.getValue() > 0.75) {
+					rotAmount = 0.75f;
+				}else {
+					rotAmount = 0.0f;
+				}
+			}
+			camAzimuth += rotAmount;
+			camAzimuth = camAzimuth % 360;
+			updateCameraPosition();
+			updateTargetPosition();
+		}
+	}
+	
 	private class IncreaseElevWithTarg implements Action{
 		
 		public void performAction(float time, net.java.games.input.Event ev) {
 			float factor = 1.0f;
-			if (camElevation >= 89.0f) {
-				camElevation = 89.0f;}
-			else {
-				camElevation += factor;
+			if (camElevation <= 0.0f) {
+				camElevation = 0.0f;
+			}else {
+				camElevation -= factor;
 			}
 			updateCameraPosition();
 			updateTargetPosition();
@@ -272,10 +250,10 @@ public class OrbitCameraController {
 		
 		public void performAction(float time, net.java.games.input.Event ev) {
 			float factor = 1.0f;
-			if (camElevation <= 0.0f) {
-				camElevation = 0.0f;
-			}else {
-				camElevation -= factor;
+			if (camElevation >= 89.0f) {
+				camElevation = 89.0f;}
+			else {
+				camElevation += factor;
 			}
 			updateCameraPosition();
 			updateTargetPosition();

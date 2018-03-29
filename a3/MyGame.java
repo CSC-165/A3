@@ -3,6 +3,7 @@ package a3;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.Random;
 
 import ray.input.GenericInputManager;
 import ray.input.InputManager;
@@ -34,6 +35,20 @@ public class MyGame extends VariableFrameRateGame {
    private MoveRightAction moveRightAction;
    private RotateLeftAction rotateLeftAction;
    private RotateRightAction rotateRightAction;
+   
+   private SceneNode cube1N;
+   private SceneNode cube2N;
+   private SceneNode cube3N;
+   
+   private Entity cube1E;
+   private Entity cube2E;
+   private Entity cube3E;
+   
+   private Random cube1Rand = new Random();
+   private Random cube2Rand = new Random();
+   private Random cube3Rand = new Random();
+   
+   private RotateController rotateController;
    
    private OrbitCameraController orbitController;
 
@@ -102,6 +117,61 @@ public class MyGame extends VariableFrameRateGame {
       
 	   Entity dolphinE = sm.createEntity("myDolphin", "dolphinHighPoly.obj");
       dolphinE.setPrimitive(Primitive.TRIANGLES);
+      
+      cube1E = sm.createEntity("cube1", "cube.obj");
+      cube2E = sm.createEntity("cube2", "cube.obj");
+      cube3E = sm.createEntity("cube3", "cube.obj");
+      
+      cube1E.setPrimitive(Primitive.TRIANGLES);
+      cube2E.setPrimitive(Primitive.TRIANGLES);
+      cube3E.setPrimitive(Primitive.TRIANGLES);
+      
+      SceneNode controlStuff = sm.getRootSceneNode().createChildSceneNode("myControlStuffNode");
+        
+      cube1N = controlStuff.createChildSceneNode(cube1E.getName() + "Node");
+      cube2N = controlStuff.createChildSceneNode(cube2E.getName() + "Node");
+      cube3N = controlStuff.createChildSceneNode(cube3E.getName() + "Node");
+      
+      float cube1Pos1 = 2.0f + cube1Rand.nextFloat() * (10.0f - 2.0f);
+      float cube1Pos2 = 2.0f + cube1Rand.nextFloat() * (10.0f - 2.0f);
+
+      float cube2Pos1 = 2.0f + cube2Rand.nextFloat() * (10.0f - 2.0f);
+      float cube2Pos2 = 2.0f + cube2Rand.nextFloat() * (10.0f - 2.0f);
+
+      float cube3Pos1 = 2.0f + cube3Rand.nextFloat() * (10.0f - 2.0f);
+      float cube3Pos2 = 2.0f + cube3Rand.nextFloat() * (10.0f - 2.0f);
+      
+      cube1N.moveBackward(cube1Pos1);
+      cube1N.moveLeft(cube1Pos1);
+      cube1N.moveRight(cube1Pos2);
+      
+      cube2N.moveBackward(cube2Pos1);
+      cube2N.moveLeft(cube2Pos1);
+      cube2N.moveRight(cube2Pos2);
+      
+      cube3N.moveBackward(cube3Pos1);
+      cube3N.moveLeft(cube3Pos1);
+      cube3N.moveRight(cube3Pos2);
+      
+      cube1N.attachObject(cube1E);
+      cube1N.scale(.25f, .25f, .25f);
+        
+      cube2N.attachObject(cube2E);
+      cube2N.scale(.25f, .25f, .25f);
+        
+      cube3N.attachObject(cube3E);
+      cube3N.scale(.25f, .25f, .25f);
+      
+      StretchController sc = new StretchController();
+
+      sc.addNode(controlStuff);
+      sm.addController(sc);
+      
+      rotateController = new RotateController();
+      rotateController.addNode(cube1N);
+      rotateController.addNode(cube2N);
+      rotateController.addNode(cube3N);
+      sm.addController(rotateController);
 
       SceneNode dolphinN = sm.getRootSceneNode().createChildSceneNode(dolphinE.getName() + "Node");
       Angle faceFront = Degreef.createFrom(45.0f);
@@ -196,7 +266,7 @@ public class MyGame extends VariableFrameRateGame {
 		elapsTimeSec = Math.round(elapsTime/1000.0f);
 		elapsTimeStr = Integer.toString(elapsTimeSec);
 		counterStr = Integer.toString(counter);
-		dispStr = "Time = " + elapsTimeStr + "   Keyboard hits = " + counterStr;
+		dispStr = "Assignment #3   " + "Player 1   " + "Time = " + elapsTimeStr + "   Keyboard hits = " + counterStr;
 		rs.setHUD(dispStr, 15, 15);
 		
 		im.update(elapsTime);

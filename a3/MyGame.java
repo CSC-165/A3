@@ -35,6 +35,8 @@ public class MyGame extends VariableFrameRateGame {
    private MoveRightAction moveRightAction;
    private RotateLeftAction rotateLeftAction;
    private RotateRightAction rotateRightAction;
+   private RotateUpAction rotateUpAction;
+   private RotateDownAction rotateDownAction;
    
    private SceneNode cube1N;
    private SceneNode cube2N;
@@ -54,6 +56,7 @@ public class MyGame extends VariableFrameRateGame {
 
    public MyGame() {
       super();
+      System.out.println("Avatar Controls: ");
       System.out.println("W to move forward");
       System.out.println("S to move backwards");
       System.out.println("A to move left");
@@ -61,6 +64,22 @@ public class MyGame extends VariableFrameRateGame {
       
       System.out.println("Q to rotate left");
       System.out.println("Z to rotate right");
+      System.out.println("E to rotate up");
+      System.out.println("X to rotate down");
+      
+      System.out.println("\nCamera Controls: ");
+      System.out.println("V to zoom in");
+      System.out.println("B to zoom out");
+      System.out.println("L to orbit right");
+      System.out.println("J to orbit left");
+      System.out.println("I to orbit up");
+      System.out.println("K to orbit down");
+      
+      System.out.println("\nAvatar with Camera Controls: ");
+      System.out.println("F to rotate camera/avatar right");
+      System.out.println("H to rotate camera/avatar left");
+      System.out.println("T to rotate camera/avatar up");
+      System.out.println("G to rotate camera/avatar down");
    }
 
    public static void main(String[] args) {
@@ -220,6 +239,8 @@ public class MyGame extends VariableFrameRateGame {
       moveRightAction = new MoveRightAction(dolphinN);
       rotateLeftAction = new RotateLeftAction(dolphinN);
       rotateRightAction = new RotateRightAction(dolphinN);
+      rotateUpAction = new RotateUpAction(this,dolphinN);
+      rotateDownAction = new RotateDownAction(this,dolphinN);
       
       System.out.println("Keyboard: " + keyboard1);
       System.out.println("Gamepad: " + gamePad1);
@@ -254,6 +275,16 @@ public class MyGame extends VariableFrameRateGame {
                          net.java.games.input.Component.Identifier.Key.Z, 
                          rotateRightAction,
                          InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+      
+      im.associateAction(keyboard1, 
+              net.java.games.input.Component.Identifier.Key.E, 
+              rotateUpAction,
+              InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+      
+      im.associateAction(keyboard1, 
+              net.java.games.input.Component.Identifier.Key.X, 
+              rotateDownAction,
+              InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 
 
    }

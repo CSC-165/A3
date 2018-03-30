@@ -2,18 +2,22 @@ package a3;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.*;
 import java.io.*;
 import java.util.Random;
 
 import ray.input.GenericInputManager;
 import ray.input.InputManager;
 import ray.rage.*;
+import ray.rage.asset.texture.*;
 import ray.rage.game.*;
 import ray.rage.rendersystem.*;
 import ray.rage.rendersystem.Renderable.*;
+import ray.rage.rendersystem.states.*;
 import ray.rage.scene.*;
 import ray.rage.scene.Camera.Frustum.*;
 import ray.rage.scene.controllers.*;
+import ray.rage.util.*;
 import ray.rml.*;
 import ray.rage.rendersystem.gl4.GL4RenderSystem;
 
@@ -49,6 +53,9 @@ public class MyGame extends VariableFrameRateGame {
    private Random cube1Rand = new Random();
    private Random cube2Rand = new Random();
    private Random cube3Rand = new Random();
+   
+   private static final String SKYBOX = "SkyBox";
+   private boolean skyBoxVisible = true;
    
    private RotateController rotateController;
    
@@ -125,6 +132,40 @@ public class MyGame extends VariableFrameRateGame {
    @Override
    protected void setupScene(Engine eng, SceneManager sm) throws IOException {
       im = new GenericInputManager();
+      
+      //skybox
+      //http://www.custommapmakers.org/skyboxes.php
+      Configuration config = eng.getConfiguration();
+      TextureManager tm = eng.getTextureManager();
+      tm.setBaseDirectoryPath(config.valueOf("assets.skyboxes.path"));
+      Texture front = tm.getAssetByPath("front.jpg");
+      Texture back = tm.getAssetByPath("back.jpg");
+      Texture left = tm.getAssetByPath("left.jpg");
+      Texture right = tm.getAssetByPath("right.jpg");
+      Texture top = tm.getAssetByPath("top.jpg");
+      Texture bottom = tm.getAssetByPath("bottom.jpg");
+      tm.setBaseDirectoryPath(config.valueOf("assets.textures.path"));
+      
+      AffineTransform xform = new AffineTransform();
+      xform.translate(0,front.getImage().getHeight());
+      xform.scale(1d, -1d);
+      
+
+      front.transform(xform);
+      back.transform(xform);
+      left.transform(xform);
+      right.transform(xform);
+      top.transform(xform);
+      bottom.transform(xform);
+      
+      SkyBox sb = sm.createSkyBox(SKYBOX);
+      sb.setTexture(front,  SkyBox.Face.FRONT);
+      sb.setTexture(back,  SkyBox.Face.BACK);
+      sb.setTexture(left,  SkyBox.Face.LEFT);
+      sb.setTexture(right,  SkyBox.Face.RIGHT);
+      sb.setTexture(top,  SkyBox.Face.TOP);
+      sb.setTexture(bottom,  SkyBox.Face.BOTTOM);
+      sm.setActiveSkyBox(sb);
       
       //temp object for perspective
       Entity sphere1 = sm.createEntity("sphere1", "sphere.obj");

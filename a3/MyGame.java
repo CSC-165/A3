@@ -4,7 +4,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
 import java.io.*;
-import java.util.Random;
+import java.util.*;
+import java.util.List;
 
 import ray.input.GenericInputManager;
 import ray.input.InputManager;
@@ -20,6 +21,11 @@ import ray.rage.scene.controllers.*;
 import ray.rage.util.*;
 import ray.rml.*;
 import ray.rage.rendersystem.gl4.GL4RenderSystem;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineFactory;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 import myGameEngine.OrbitCameraController;
 
@@ -90,10 +96,33 @@ public class MyGame extends VariableFrameRateGame {
    }
 
    public static void main(String[] args) {
-      Game game = new MyGame();
+      MyGame game = new MyGame();
       try {
          game.startup();
+         
+         
+         ScriptEngineManager factory = new ScriptEngineManager();
+         String scriptFileName = "hello.js";
+         
+         // get a list of the script engines on this platform
+         List<ScriptEngineFactory> list = factory.getEngineFactories();
+         
+         System.out.println("Script Engine Factories found:");
+         
+         for (ScriptEngineFactory f : list) { 
+            System.out.println(" Name = " + f.getEngineName()
+               + " language = " + f.getLanguageName()
+               + " extensions = " + f.getExtensions());
+         }
+         
+         // get the JavaScript engine
+         ScriptEngine jsEngine = factory.getEngineByName("js");
+         
+         // run the script
+         game.executeScript(jsEngine, scriptFileName);
+         
          game.run();
+         
       } catch (Exception e) {
          e.printStackTrace(System.err);
       } finally {
@@ -101,14 +130,36 @@ public class MyGame extends VariableFrameRateGame {
          game.exit();
       }
    }
+   
+   public void executeScript(ScriptEngine engine, String scriptFileName) {
+      try { 
+         FileReader fileReader = new FileReader(scriptFileName);
+         engine.eval(fileReader); //execute the script statements in the file
+         fileReader.close();
+      }
+      
+      catch (FileNotFoundException e1) { 
+         System.out.println(scriptFileName + " not found " + e1); 
+      }
+      catch (IOException e2) { 
+         System.out.println("IO problem with " + scriptFileName + e2); 
+      }
+      catch (ScriptException e3) { 
+         System.out.println("ScriptException in " + scriptFileName + e3); 
+      }
+      catch (NullPointerException e4) { 
+         System.out.println ("Null ptr exception in " + scriptFileName + e4); 
+      }
+   }
+
 	
 	@Override
 	protected void setupWindow(RenderSystem rs, GraphicsEnvironment ge) {
 		/* Makes game windowed mode */
-      //rs.createRenderWindow(new DisplayMode(1000, 700, 24, 60), false);
+      rs.createRenderWindow(new DisplayMode(1000, 700, 24, 60), false);
       
       /* Makes game fullscreen */
-      rs.createRenderWindow(true);
+      //rs.createRenderWindow(true);
 	}
 
    @Override

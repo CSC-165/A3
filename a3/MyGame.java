@@ -116,10 +116,10 @@ public class MyGame extends VariableFrameRateGame {
          }
          
          // get the JavaScript engine
-         ScriptEngine jsEngine = factory.getEngineByName("js");
+         //ScriptEngine jsEngine = factory.getEngineByName("js");
          
          // run the script
-         game.executeScript(jsEngine, scriptFileName);
+         //game.executeScript(jsEngine, scriptFileName);
          
          game.run();
          
@@ -293,14 +293,23 @@ public class MyGame extends VariableFrameRateGame {
 
       sm.getAmbientLight().setIntensity(new Color(.1f, .1f, .1f));
 		
-      Light plight = sm.createLight("testLamp1", Light.Type.POINT);
+      /*Light plight = sm.createLight("testLamp1", Light.Type.POINT);
       plight.setAmbient(new Color(.3f, .3f, .3f));
       plight.setDiffuse(new Color(.7f, .7f, .7f));
       plight.setSpecular(new Color(1.0f, 1.0f, 1.0f));
-      plight.setRange(5f);
+      plight.setRange(5f);*/
+      
+      ScriptEngineManager factory = new ScriptEngineManager();
+      java.util.List<ScriptEngineFactory> list = factory.getEngineFactories();
+      ScriptEngine jsEngine = factory.getEngineByName("js");
+      
+      File scriptFile2 = new File("CreateLight.js");
+      jsEngine.put("sm", sm);
+      this.executeScript(jsEngine, "CreateLight.js");
 		
       SceneNode plightNode = sm.getRootSceneNode().createChildSceneNode("plightNode");
-      plightNode.attachObject(plight);
+      //plightNode.attachObject(plight);
+      plightNode.attachObject((Light)jsEngine.get("plight"));
       
       setupInputs(sm);
       setupOrbitCameras(eng,sm);

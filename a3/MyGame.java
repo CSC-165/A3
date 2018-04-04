@@ -218,6 +218,16 @@ public class MyGame extends VariableFrameRateGame {
       sb.setTexture(bottom,  SkyBox.Face.BOTTOM);
       sm.setActiveSkyBox(sb);
       
+    //terrain
+      Tessellation tessE = sm.createTessellation("tessE", 8);
+      tessE.setSubdivisions(16f);
+      SceneNode tessN = sm.getRootSceneNode().createChildSceneNode("tessN");
+      tessN.attachObject(tessE);
+      tessN.moveDown(150f);
+      tessN.scale(200, 150, 200);
+      tessE.setHeightMap(eng, "height_map.jpg");
+      tessE.setTexture(eng, "bottom.jpg");
+
       //temp object for perspective
       Entity sphere1 = sm.createEntity("sphere1", "sphere.obj");
       sphere1.setPrimitive(Primitive.TRIANGLES);
@@ -226,8 +236,16 @@ public class MyGame extends VariableFrameRateGame {
       sphere1Node.attachObject(sphere1);
       sphere1Node.moveForward(2.0f);
       
-	   Entity dolphinE = sm.createEntity("myDolphin", "dolphinHighPoly.obj");
+	  Entity dolphinE = sm.createEntity("myDolphin", "dolphinHighPoly.obj");
       dolphinE.setPrimitive(Primitive.TRIANGLES);
+      
+      SceneNode dolphinN = sm.getRootSceneNode().createChildSceneNode(dolphinE.getName() + "Node");
+      Angle faceFront = Degreef.createFrom(45.0f);
+        
+      dolphinN.moveBackward(2.0f);
+      dolphinN.moveDown(148f);
+      dolphinN.yaw(faceFront);
+      dolphinN.attachObject(dolphinE);
       
       cube1E = sm.createEntity("cube1", "cube.obj");
       cube2E = sm.createEntity("cube2", "cube.obj");
@@ -284,13 +302,6 @@ public class MyGame extends VariableFrameRateGame {
       rotateController.addNode(cube3N);
       sm.addController(rotateController);
 
-      SceneNode dolphinN = sm.getRootSceneNode().createChildSceneNode(dolphinE.getName() + "Node");
-      Angle faceFront = Degreef.createFrom(45.0f);
-        
-      dolphinN.moveBackward(2.0f);
-      dolphinN.yaw(faceFront);
-      dolphinN.attachObject(dolphinE);
-
       sm.getAmbientLight().setIntensity(new Color(.1f, .1f, .1f));
 		
       Light plight = sm.createLight("testLamp1", Light.Type.POINT);
@@ -306,6 +317,24 @@ public class MyGame extends VariableFrameRateGame {
       setupOrbitCameras(eng,sm);
 
    }
+   
+   protected void updateVerticalPos() {
+	   SceneNode dolphin = this.getEngine().
+			   getSceneManager().getSceneNode("myDolphinNode");
+	   SceneNode tessN = this.getEngine().
+			   getSceneManager().getSceneNode("tessN");
+	   Tessellation tessE = ((Tessellation)tessN.getAttachedObject("tessE"));
+	   
+	   Vector3 worldAvatarPos = dolphin.getWorldPosition();
+	   Vector3 localAvatarPos = dolphin.getLocalPosition();
+	   
+	   Vector3 newAvatarPos = Vector3f.createFrom(localAvatarPos.x(),
+			   tessE.getWorldHeight(worldAvatarPos.x(), worldAvatarPos.z()) + 0.75f,
+			   localAvatarPos.z());
+	   
+	   dolphin.setLocalPosition(newAvatarPos);
+   }
+
    
    protected void setupOrbitCameras(Engine eng, SceneManager sm) {
 	   SceneNode dolphinN = sm.getSceneNode("myDolphinNode");
@@ -325,10 +354,10 @@ public class MyGame extends VariableFrameRateGame {
       
       SceneNode dolphinN = getEngine().getSceneManager().getSceneNode("myDolphinNode");
       
-      moveForwardAction = new MoveForwardAction(dolphinN);
-      moveBackwardAction = new MoveBackwardAction(dolphinN);
-      moveLeftAction = new MoveLeftAction(dolphinN);
-      moveRightAction = new MoveRightAction(dolphinN);
+      moveForwardAction = new MoveForwardAction(this, dolphinN);
+      moveBackwardAction = new MoveBackwardAction(this, dolphinN);
+      moveLeftAction = new MoveLeftAction(this, dolphinN);
+      moveRightAction = new MoveRightAction(this, dolphinN);
       rotateLeftAction = new RotateLeftAction(dolphinN);
       rotateRightAction = new RotateRightAction(dolphinN);
       rotateUpAction = new RotateUpAction(this,dolphinN);

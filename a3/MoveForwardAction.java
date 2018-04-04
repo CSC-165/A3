@@ -8,13 +8,18 @@ import net.java.games.input.Event;
 
 public class MoveForwardAction extends AbstractInputAction {
    private SceneNode node;
+   private MyGame game;
+   private float time;
    
-   public MoveForwardAction(SceneNode node) {
+   public MoveForwardAction(MyGame g, SceneNode node) {
       this.node = node;
+      game = g;
    }
 
    public void performAction(float time, Event e) { 
-      node.moveForward(.015f);
+	  time = (game.getEngine().getElapsedTimeMillis())/1000;
+	  node.moveForward(time);
+	  game.updateVerticalPos();
    }
    
 }

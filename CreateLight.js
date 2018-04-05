@@ -12,5 +12,5 @@ with (JavaPackages) {
    plight.setAmbient(new Color(1.0, 1.0, 1.0));
    plight.setDiffuse(new Color(.0, .7, .0));
    plight.setSpecular(new Color(.4, .8, .2));
-   plight.setRange(5);
+   plight.setRange(500);
 }

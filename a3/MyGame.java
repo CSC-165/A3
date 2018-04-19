@@ -18,6 +18,7 @@ import ray.rage.rendersystem.states.*;
 import ray.rage.scene.*;
 import ray.rage.scene.Camera.Frustum.*;
 import ray.rage.scene.controllers.*;
+import static ray.rage.scene.SkeletalEntity.EndType.*;
 import ray.rage.util.*;
 import ray.rml.*;
 import ray.rage.rendersystem.gl4.GL4RenderSystem;
@@ -62,6 +63,8 @@ public class MyGame extends VariableFrameRateGame {
    
    private static final String SKYBOX = "SkyBox";
    private boolean skyBoxVisible = true;
+   
+   private SkeletalEntity snowmanSE;
    
    private RotateController rotateController;
    
@@ -183,6 +186,21 @@ public class MyGame extends VariableFrameRateGame {
    @Override
    protected void setupScene(Engine eng, SceneManager sm) throws IOException {
       im = new GenericInputManager();
+      
+      snowmanSE = sm.createSkeletalEntity("snowman", "snowman.rkm", "snowman.rks");
+      
+      Texture tex2 = sm.getTextureManager().getAssetByPath("coloredgoodsnowman.png");
+      TextureState tstate2 = (TextureState) sm.getRenderSystem().createRenderState(RenderState.Type.TEXTURE);
+      tstate2.setTexture(tex2);
+      snowmanSE.setRenderState(tstate2);
+      // attach the entity to a scene node
+      SceneNode snowmanN = sm.getRootSceneNode().createChildSceneNode("snowmanNode");
+      snowmanN.attachObject(snowmanSE);
+      snowmanN.scale(.5f, .5f, .5f);
+      snowmanN.translate(0, .5f, 0);
+      snowmanN.moveDown(149f);
+      
+      snowmanSE.loadAnimation("waveAnimation", "snowman.rka");
       
       //skybox
       //http://www.custommapmakers.org/skyboxes.php
@@ -433,7 +451,15 @@ public class MyGame extends VariableFrameRateGame {
 		
 		im.update(elapsTime);
 		orbitController.updateCameraPosition();
+      
+      snowmanSE.update();
 	}
+   
+   private void doTheWave() { 
+      SkeletalEntity snowmanSE = (SkeletalEntity)getEngine().getSceneManager().getEntity("snowman");
+      snowmanSE.stopAnimation();
+      snowmanSE.playAnimation("waveAnimation", 0.5f, LOOP, 0);
+   }
    
    //distDetection takes two SceneNodes as parameters and
    //returns the distance between the two as a vector.
@@ -448,6 +474,9 @@ public class MyGame extends VariableFrameRateGame {
    public void keyPressed(KeyEvent e) {
       Entity dolphin = getEngine().getSceneManager().getEntity("myDolphin");
       switch (e.getKeyCode()) {
+         case KeyEvent.VK_2:
+            doTheWave();
+            break;
         /* case KeyEvent.VK_L:
             dolphin.setPrimitive(Primitive.LINES);
             break;

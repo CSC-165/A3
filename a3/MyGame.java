@@ -102,6 +102,7 @@ public class MyGame extends VariableFrameRateGame {
 		System.out.println("G to rotate camera/avatar down");
 		
 		System.out.println("\n 1 to start/stop shark animation");
+      System.out.println("\n 2 to start/stop snowman animation");
    }
 
    public static void main(String[] args) {

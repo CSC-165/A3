@@ -40,62 +40,68 @@ public class MyGame extends VariableFrameRateGame {
    
 	private InputManager im;
 	
-   private MoveForwardAction moveForwardAction;
-   private MoveBackwardAction moveBackwardAction;
-   private MoveLeftAction moveLeftAction;
-   private MoveRightAction moveRightAction;
-   private RotateLeftAction rotateLeftAction;
-   private RotateRightAction rotateRightAction;
-   private RotateUpAction rotateUpAction;
-   private RotateDownAction rotateDownAction;
+	private MoveForwardAction moveForwardAction;
+	private MoveBackwardAction moveBackwardAction;
+	private MoveLeftAction moveLeftAction;
+	private MoveRightAction moveRightAction;
+	private RotateLeftAction rotateLeftAction;
+	private RotateRightAction rotateRightAction;
+	private RotateUpAction rotateUpAction;
+	private RotateDownAction rotateDownAction;
+	private MoveSharkAction moveSharkAction;
    
-   private SceneNode cube1N;
-   private SceneNode cube2N;
-   private SceneNode cube3N;
+	private SceneNode cube1N;
+	private SceneNode cube2N;
+	private SceneNode cube3N;
    
-   private Entity cube1E;
-   private Entity cube2E;
-   private Entity cube3E;
+	private Entity cube1E;
+	private Entity cube2E;
+	private Entity cube3E;
    
-   private Random cube1Rand = new Random();
-   private Random cube2Rand = new Random();
-   private Random cube3Rand = new Random();
+	private Random cube1Rand = new Random();
+	private Random cube2Rand = new Random();
+	private Random cube3Rand = new Random();
    
-   private static final String SKYBOX = "SkyBox";
-   private boolean skyBoxVisible = true;
+	private static final String SKYBOX = "SkyBox";
+	private boolean skyBoxVisible = true;
    
    private SkeletalEntity snowmanSE;
    
-   private RotateController rotateController;
+	private RotateController rotateController;
    
-   private OrbitCameraController orbitController;
+	private OrbitCameraController orbitController;
+	
+	private int sharkCount = 0;
+	private Angle angle = Degreef.createFrom(-90.0f);
 
-   public MyGame() {
-      super();
-      System.out.println("Avatar Controls: ");
-      System.out.println("W to move forward");
-      System.out.println("S to move backwards");
-      System.out.println("A to move left");
-      System.out.println("D to move right\n");
+	public MyGame() {
+		super();
+		System.out.println("Avatar Controls: ");
+		System.out.println("W to move forward");
+		System.out.println("S to move backwards");
+		System.out.println("A to move left");
+		System.out.println("D to move right\n");
       
-      System.out.println("Q to rotate left");
-      System.out.println("Z to rotate right");
-      System.out.println("E to rotate up");
-      System.out.println("X to rotate down");
+		System.out.println("Q to rotate left");
+		System.out.println("Z to rotate right");
+		System.out.println("E to rotate up");
+		System.out.println("X to rotate down");
       
-      System.out.println("\nCamera Controls: ");
-      System.out.println("V to zoom in");
-      System.out.println("B to zoom out");
-      System.out.println("L to orbit right");
-      System.out.println("J to orbit left");
-      System.out.println("I to orbit up");
-      System.out.println("K to orbit down");
+		System.out.println("\nCamera Controls: ");
+		System.out.println("V to zoom in");
+		System.out.println("B to zoom out");
+		System.out.println("L to orbit right");
+		System.out.println("J to orbit left");
+		System.out.println("I to orbit up");
+		System.out.println("K to orbit down");
       
-      System.out.println("\nAvatar with Camera Controls: ");
-      System.out.println("F to rotate camera/avatar right");
-      System.out.println("H to rotate camera/avatar left");
-      System.out.println("T to rotate camera/avatar up");
-      System.out.println("G to rotate camera/avatar down");
+		System.out.println("\nAvatar with Camera Controls: ");
+		System.out.println("F to rotate camera/avatar right");
+		System.out.println("H to rotate camera/avatar left");
+		System.out.println("T to rotate camera/avatar up");
+		System.out.println("G to rotate camera/avatar down");
+		
+		System.out.println("\n 1 to start/stop shark animation");
    }
 
    public static void main(String[] args) {
@@ -219,7 +225,6 @@ public class MyGame extends VariableFrameRateGame {
       xform.translate(0,front.getImage().getHeight());
       xform.scale(1d, -1d);
       
-
       front.transform(xform);
       back.transform(xform);
       left.transform(xform);
@@ -236,15 +241,25 @@ public class MyGame extends VariableFrameRateGame {
       sb.setTexture(bottom,  SkyBox.Face.BOTTOM);
       sm.setActiveSkyBox(sb);
       
-    //terrain
-      Tessellation tessE = sm.createTessellation("tessE", 8);
-      tessE.setSubdivisions(16f);
+      //terrain
+      Tessellation tessE = sm.createTessellation("tessE", 6);
+      tessE.setSubdivisions(8f);
       SceneNode tessN = sm.getRootSceneNode().createChildSceneNode("tessN");
       tessN.attachObject(tessE);
       tessN.moveDown(150f);
       tessN.scale(200, 150, 200);
       tessE.setHeightMap(eng, "height_map.jpg");
       tessE.setTexture(eng, "bottom.jpg");
+      
+      //second instance of terrain (to fill gaps)
+      Tessellation tessE2 = sm.createTessellation("tessE2", 6);
+      tessE2.setSubdivisions(8f);
+      SceneNode tessN2 = sm.getRootSceneNode().createChildSceneNode("tessN2");
+      tessN2.attachObject(tessE2);
+      tessN2.moveDown(150.1f);
+      tessN2.scale(200, 150, 200);
+      tessE2.setHeightMap(eng, "height_map.jpg");
+      tessE2.setTexture(eng, "bottom.jpg");
 
       //temp object for perspective
       Entity sphere1 = sm.createEntity("sphere1", "sphere.obj");
@@ -319,7 +334,25 @@ public class MyGame extends VariableFrameRateGame {
       rotateController.addNode(cube2N);
       rotateController.addNode(cube3N);
       sm.addController(rotateController);
-
+      
+      //add shark and animations
+      SkeletalEntity sharkSE = sm.createSkeletalEntity("sharkAvatar", "sharkAvatar.rkm",  
+    		  "sharkAvatar.rks");
+      Texture tex = sm.getTextureManager().getAssetByPath("sharkAvatarUV.jpg");
+      TextureState tstate = (TextureState)sm.getRenderSystem().
+    		  createRenderState(RenderState.Type.TEXTURE);
+      tstate.setTexture(tex);
+      sharkSE.setRenderState(tstate);
+      
+      SceneNode sharkN = dolphinN.createChildSceneNode("sharkNode");
+      sharkN.attachObject(sharkSE);
+      sharkN.scale(0.15f,0.15f,0.15f);
+      sharkN.translate(-0.75f, 0f, -0.75f);
+      sharkN.yaw(angle);
+      
+      sharkSE.loadAnimation("moveShark", "sharkAvatar.rka");
+      
+      //lights
       sm.getAmbientLight().setIntensity(new Color(.1f, .1f, .1f));
 		
       /*Light plight = sm.createLight("testLamp1", Light.Type.POINT);
@@ -390,6 +423,7 @@ public class MyGame extends VariableFrameRateGame {
       rotateRightAction = new RotateRightAction(dolphinN);
       rotateUpAction = new RotateUpAction(this,dolphinN);
       rotateDownAction = new RotateDownAction(this,dolphinN);
+      moveSharkAction = new MoveSharkAction(this);
       
       System.out.println("Keyboard: " + keyboard1);
       System.out.println("Gamepad: " + gamePad1);
@@ -434,6 +468,12 @@ public class MyGame extends VariableFrameRateGame {
               net.java.games.input.Component.Identifier.Key.X, 
               rotateDownAction,
               InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+      
+
+      im.associateAction(keyboard1, 
+              net.java.games.input.Component.Identifier.Key._1, 
+              moveSharkAction,
+              InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 
 
    }
@@ -451,8 +491,14 @@ public class MyGame extends VariableFrameRateGame {
 		
 		im.update(elapsTime);
 		orbitController.updateCameraPosition();
-      
+
       snowmanSE.update();
+      
+		//update shark animation
+		SkeletalEntity sharkSE = (SkeletalEntity)engine.
+				getSceneManager().getEntity("sharkAvatar");
+		sharkSE.update();
+
 	}
    
    private void doTheWave() { 
@@ -491,5 +537,15 @@ public class MyGame extends VariableFrameRateGame {
 				break;*/
       }
       super.keyPressed(e);
+   }
+   
+   public void moveShark() {
+	   sharkCount++;
+	   SkeletalEntity sharkSE = (SkeletalEntity)getEngine().
+			   getSceneManager().getEntity("sharkAvatar");
+	   if ((sharkCount % 2) == 0)
+		   sharkSE.pauseAnimation();
+	   else
+		   sharkSE.playAnimation("moveShark", 1.0f, LOOP, 0);
    }
 }

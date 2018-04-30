@@ -156,9 +156,8 @@ public class OrbitCameraController {
 		public void performAction(float time, net.java.games.input.Event ev) {
 			Vector3 dist = game.distDetection(camNode, target);
 			float mag = dist.length();
-			//float radAmount;
-			if (Math.abs(mag) >= 3.0f) {
-				radius = 3.0f;
+			if (Math.abs(mag) >= 5.0f) {
+				radius = 5.0f;
 			}else {
 				radius += 0.1f;
 			}
@@ -183,8 +182,8 @@ public class OrbitCameraController {
 		
 		public void performAction(float time, net.java.games.input.Event ev) {
 			float factor = 1.0f;
-			if (camElevation <= 0.0f) {
-				camElevation = 0.0f;
+			if (camElevation <= -2.0f) {
+				camElevation = -2.0f;
 			}else {
 				camElevation -= factor;
 			}

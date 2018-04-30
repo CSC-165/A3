@@ -20,6 +20,7 @@ public class MoveBackwardAction extends AbstractInputAction {
 	  time = (game.getEngine().getElapsedTimeMillis())/1000;
 	  node.moveBackward(time);
 	  game.updateVerticalPos();
+	  game.detectCollision();
    }
    
 }

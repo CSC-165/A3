@@ -6,6 +6,8 @@ import java.awt.geom.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import ray.input.GenericInputManager;
 import ray.input.InputManager;
@@ -22,6 +24,8 @@ import static ray.rage.scene.SkeletalEntity.EndType.*;
 import ray.rage.util.*;
 import ray.rml.*;
 import ray.rage.rendersystem.gl4.GL4RenderSystem;
+import ray.networking.IGameConnection.ProtocolType;
+import ray.input.action.AbstractInputAction;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
@@ -73,6 +77,15 @@ public class MyGame extends VariableFrameRateGame {
 	
 	private int sharkCount = 0;
 	private Angle angle = Degreef.createFrom(-90.0f);
+   
+   private String serverAddress;
+   private int serverPort;
+   private ProtocolType serverProtocol;
+   private ProtocolClient protClient;
+   private boolean isClientConnected;
+   private Vector<UUID> gameObjectsToRemove;
+   
+   private SceneManager sceneM;
 
 	public MyGame() {
 		super();
@@ -139,6 +152,80 @@ public class MyGame extends VariableFrameRateGame {
          game.shutdown();
          game.exit();
       }
+   }
+   
+   public void setIsConnected(boolean isConnected) {
+      this.isClientConnected = isConnected;   
+   }
+   
+   private void setupNetworking() { 
+      gameObjectsToRemove = new Vector<UUID>();
+      isClientConnected = false;
+
+      try { 
+         protClient = new ProtocolClient(InetAddress.
+         getByName(serverAddress), serverPort, serverProtocol, this);
+      } catch (UnknownHostException e) { 
+         e.printStackTrace();
+      } catch (IOException e) { 
+         e.printStackTrace();
+      }
+
+      if (protClient == null) { 
+         System.out.println("missing protocol host"); 
+      }
+      
+      else { // ask client protocol to send initial join message to server, with a unique identifier for this client
+         protClient.sendJoinMessage();
+      } 
+   }
+   
+   protected void processNetworking(float elapsTime) { // Process packets received by the client from the server
+      if (protClient != null) {
+         protClient.processPackets();
+      }
+
+      // remove ghost avatars for players who have left the game
+      Iterator<UUID> it = gameObjectsToRemove.iterator();
+
+      while(it.hasNext()) { 
+         sceneM.destroySceneNode(it.next().toString());
+      }
+      gameObjectsToRemove.clear();
+   }
+   
+   public Vector3 getPlayerPosition() { 
+      SceneNode dolphinN = sceneM.getSceneNode("dolphinNode");
+      return dolphinN.getWorldPosition();
+   }
+   
+   public void addGhostAvatarToGameWorld(GhostAvatar avatar) throws IOException { 
+      if (avatar != null) { 
+         Entity ghostE = sceneM.createEntity("ghost", "whatever.obj");
+         ghostE.setPrimitive(Primitive.TRIANGLES);
+         SceneNode ghostN = sceneM.getRootSceneNode().
+         createChildSceneNode(avatar.getID().toString());
+         ghostN.attachObject(ghostE);
+         ghostN.setLocalPosition(1, 1, 1);
+         avatar.setNode(ghostN);
+         avatar.setEntity(ghostE);
+         Vector3f position = new Vector3f(float [1.0]);
+         avatar.setPosition(position);
+      } 
+   }
+   
+   public void removeGhostAvatarFromGameWorld(GhostAvatar avatar) { 
+      if (avatar != null) gameObjectsToRemove.add(avatar.getID());
+   }
+   
+   private class SendCloseConnectionPacketAction extends AbstractInputAction { 
+      // for leaving the game... need to attach to an input device
+      @Override
+      public void performAction(float time, Event evt) { 
+         if (protClient != null && isClientConnected == true) { 
+            protClient.sendByeMessage();
+         } 
+      } 
    }
    
    public void executeScript(ScriptEngine engine, String scriptFileName) {
@@ -499,6 +586,8 @@ public class MyGame extends VariableFrameRateGame {
 		SkeletalEntity sharkSE = (SkeletalEntity)engine.
 				getSceneManager().getEntity("sharkAvatar");
 		sharkSE.update();
+      
+      processNetworking(elapsTime);
 
 	}
    

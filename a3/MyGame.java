@@ -22,6 +22,7 @@ import ray.rage.scene.controllers.*;
 import static ray.rage.scene.SkeletalEntity.EndType.*;
 import ray.rage.util.*;
 import ray.rml.*;
+import ray.audio.*;
 import ray.rage.rendersystem.gl4.GL4RenderSystem;
 import ray.physics.PhysicsEngine;
 import ray.physics.PhysicsObject;
@@ -34,6 +35,8 @@ import javax.script.ScriptException;
 
 import myGameEngine.OrbitCameraController;
 import myGameEngine.ShrinkController;
+
+//import com.jogamp.*;
 
 public class MyGame extends VariableFrameRateGame {
 
@@ -77,6 +80,9 @@ public class MyGame extends VariableFrameRateGame {
 
 	private Iterator<SceneNode> iter;
 	private int score = 0;
+   
+   private IAudioManager audioMgr;
+   private Sound backgroundMusic;
 	
 	public MyGame() {
 		super();
@@ -330,7 +336,19 @@ public class MyGame extends VariableFrameRateGame {
       
       setupInputs(sm);
       setupOrbitCameras(eng,sm);
+      
+      //initAudio(sm);
 
+   }
+   
+   public void setEarParameters(SceneManager sm) { 
+      SceneNode dolphinNode = sm.getSceneNode("myDolphinNode");
+      Vector3 avDir = dolphinNode.getWorldForwardAxis();
+
+      // note - should get the camera's forward direction
+      // - avatar direction plus azimuth
+      audioMgr.getEar().setLocation(dolphinNode.getWorldPosition());
+      audioMgr.getEar().setOrientation(avDir, Vector3f.createFrom(0,1,0));
    }
    
    protected void updateVerticalPos() {
@@ -450,6 +468,12 @@ public class MyGame extends VariableFrameRateGame {
 			getSceneManager().getEntity("sharkAvatar");
 	   sharkSE.update();
 		
+      SceneManager sm = engine.getSceneManager();
+      
+      SceneNode dolphinN = getEngine().getSceneManager().getSceneNode("myDolphinNode");
+      backgroundMusic.setLocation(dolphinN.getWorldPosition());
+      setEarParameters(sm);
+      
 	   //physics
 	   if (running) {
 		Matrix4 mat;
@@ -462,6 +486,31 @@ public class MyGame extends VariableFrameRateGame {
 			}
 		}
 	   }
+   }
+   
+   public void initAudio(SceneManager sm) { 
+      AudioResource oceanTrack;
+      audioMgr = AudioManagerFactory.createAudioManager("ray.audio.joal.JOALAudioManager");
+      if (!audioMgr.initialize()) { 
+         System.out.println("Audio Manager failed to initialize!");
+         return;
+      }
+
+      oceanTrack = audioMgr.createAudioResource("oceanMusic.mp3",
+      AudioResourceType.AUDIO_SAMPLE);
+
+      backgroundMusic = new Sound(oceanTrack,
+      SoundType.SOUND_EFFECT, 100, true);
+   
+      backgroundMusic.initialize(audioMgr);
+
+      backgroundMusic.setMaxDistance(10.0f);
+      backgroundMusic.setMinDistance(0.5f);
+      backgroundMusic.setRollOff(5.0f);
+      SceneNode dolphinN = sm.getSceneNode("myDolphinNode");
+      backgroundMusic.setLocation(dolphinN.getWorldPosition());
+      setEarParameters(sm);
+      backgroundMusic.play();
    }
    
    //physics

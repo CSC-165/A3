@@ -62,6 +62,10 @@ public class MyGame extends VariableFrameRateGame {
 	private SceneNode cube1N, cube2N, cube3N;
 	private Entity cube1E, cube2E, cube3E;
 	
+	private SceneNode dlightNode;
+	private Light dlight;
+	private int lightCount = 0;
+	
 	//external models
     private SkeletalEntity snowmanSE;
 	private int sharkCount = 0;
@@ -113,6 +117,7 @@ public class MyGame extends VariableFrameRateGame {
 		System.out.println("2 to start/stop snowman animation");
 		
 		System.out.println("\nPress SPACE to drop food");
+		System.out.println("0 to turn directional light on/off");
    }
 
    public static void main(String[] args) {
@@ -354,12 +359,6 @@ public class MyGame extends VariableFrameRateGame {
       
       //lights
       sm.getAmbientLight().setIntensity(new Color(.1f, .1f, .1f));
-		
-      /*Light plight = sm.createLight("testLamp1", Light.Type.POINT);
-      plight.setAmbient(new Color(.3f, .3f, .3f));
-      plight.setDiffuse(new Color(.7f, .7f, .7f));
-      plight.setSpecular(new Color(1.0f, 1.0f, 1.0f));
-      plight.setRange(5f);*/
       
       ScriptEngineManager factory = new ScriptEngineManager();
       java.util.List<ScriptEngineFactory> list = factory.getEngineFactories();
@@ -368,17 +367,12 @@ public class MyGame extends VariableFrameRateGame {
       File scriptFile2 = new File("CreateLight.js");
       jsEngine.put("sm", sm);
       this.executeScript(jsEngine, "CreateLight.js");
-		
-      SceneNode plightNode = sm.getRootSceneNode().createChildSceneNode("plightNode");
       dolphinN.attachObject((Light)jsEngine.get("plight"));
-      
-      //plightNode.attachObject(plight);
       
       //physics
       Entity groundE = sm.createEntity(GROUND_E, "cube.obj");
       groundN = sm.getRootSceneNode().createChildSceneNode(GROUND_N);
       groundN.attachObject(groundE);
-      //groundN.moveDown(200f);
       groundN.setLocalPosition(0,-200,-2);
       groundN.scale(3f,0.5f,3f);
       
@@ -680,6 +674,8 @@ public class MyGame extends VariableFrameRateGame {
    
    @Override
    public void keyPressed(KeyEvent e) {
+	   Engine eng = this.getEngine();
+	   SceneManager sm = this.getEngine().getSceneManager();
 	  switch (e.getKeyCode()) {
          case KeyEvent.VK_2:
             doTheWave();
@@ -696,6 +692,22 @@ public class MyGame extends VariableFrameRateGame {
         	 }
         	 running = true;
         	 break;
+         case KeyEvent.VK_0:
+        	 lightCount++;
+        	 if (lightCount % 2 != 0) {
+        		dlight = sm.createLight("dirLight",  Light.Type.DIRECTIONAL);
+       	      	dlight.setAmbient(new Color(.3f, .3f, .3f));
+       	      	dlight.setDiffuse(new Color(.7f, .7f, .7f));
+       	      	dlight.setSpecular(new Color(1f, 1f, 1f));
+       	      	dlight.setRange(10f);
+       	      	dlightNode = sm.getRootSceneNode().createChildSceneNode("dlightNode");
+       	      	dlightNode.moveDown(140f);
+       	      	dlightNode.attachObject(dlight);
+        	 }   
+        	 else {
+        		 sm.destroySceneNode(dlightNode);
+        		 sm.destroyLight(dlight);
+        	 }
       }
       super.keyPressed(e);
    }

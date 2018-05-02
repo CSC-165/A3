@@ -54,25 +54,28 @@ public class MyGame extends VariableFrameRateGame {
 	private static final String SKYBOX = "SkyBox";
 	private boolean skyBoxVisible = true;
 
-	private ShrinkController sc = new ShrinkController(this);
-   
-    private SkeletalEntity snowmanSE;
-   
-	private RotateController rotateController;
-   
+	private ShrinkController shrink = new ShrinkController(this);
+	private RotateController rotateController = new RotateController();
+	StretchController stretch = new StretchController();
 	private OrbitCameraController orbitController;
 	
+	private SceneNode cube1N, cube2N, cube3N;
+	private Entity cube1E, cube2E, cube3E;
+	
+	//external models
+    private SkeletalEntity snowmanSE;
 	private int sharkCount = 0;
 	private Angle angle = Degreef.createFrom(-90.0f);
 	
+	//physics/collision detection
 	private SceneNode groundN;
 	private PhysicsEngine physEng;
 	private PhysicsObject physSphere1, physSphere2, physSphere3, 
 		physSphere4, physSphere5, groundPlane;
-	
 	private boolean running = false;
 	private Random r1 = new Random();
 	private Random r2 = new Random();
+	private Random r3 = new Random();
 	private int foodCount = 0;
 
 	private Iterator<SceneNode> iter;
@@ -200,21 +203,9 @@ public class MyGame extends VariableFrameRateGame {
    @Override
    protected void setupScene(Engine eng, SceneManager sm) throws IOException {
       im = new GenericInputManager();
-      
-      snowmanSE = sm.createSkeletalEntity("snowman", "snowman.rkm", "snowman.rks");
-      
-      Texture tex2 = sm.getTextureManager().getAssetByPath("coloredgoodsnowman.png");
-      TextureState tstate2 = (TextureState) sm.getRenderSystem().createRenderState(RenderState.Type.TEXTURE);
-      tstate2.setTexture(tex2);
-      snowmanSE.setRenderState(tstate2);
-      // attach the entity to a scene node
-      SceneNode snowmanN = sm.getRootSceneNode().createChildSceneNode("snowmanNode");
-      snowmanN.attachObject(snowmanSE);
-      snowmanN.scale(.5f, .5f, .5f);
-      snowmanN.translate(0, .5f, 0);
-      snowmanN.moveDown(149f);
-      
-      snowmanSE.loadAnimation("waveAnimation", "snowman.rka");
+      sm.addController(shrink);
+      sm.addController(rotateController);
+      sm.addController(stretch);
       
       //skybox
       //http://www.custommapmakers.org/skyboxes.php
@@ -280,8 +271,22 @@ public class MyGame extends VariableFrameRateGame {
       dolphinN.moveDown(148f);
       dolphinN.yaw(faceFront);
       dolphinN.attachObject(dolphinE);
+   
+      //External objects
+      snowmanSE = sm.createSkeletalEntity("snowman", "snowman.rkm", "snowman.rks");
+      Texture tex2 = sm.getTextureManager().getAssetByPath("coloredgoodsnowman.png");
+      TextureState tstate2 = (TextureState) sm.getRenderSystem().createRenderState(RenderState.Type.TEXTURE);
+      tstate2.setTexture(tex2);
+      snowmanSE.setRenderState(tstate2);
+     
+      SceneNode snowmanN = sm.getRootSceneNode().createChildSceneNode("snowmanNode");
+      snowmanN.attachObject(snowmanSE);
+      snowmanN.scale(.5f, .5f, .5f);
+      snowmanN.translate(0, .5f, 0);
+      snowmanN.moveDown(149f);
       
-      //add shark and animations
+      snowmanSE.loadAnimation("waveAnimation", "snowman.rka");
+
       SkeletalEntity sharkSE = sm.createSkeletalEntity("sharkAvatar", "sharkAvatar.rkm",  
     		  "sharkAvatar.rks");
       Texture tex = sm.getTextureManager().getAssetByPath("sharkAvatarUV.jpg");
@@ -297,6 +302,55 @@ public class MyGame extends VariableFrameRateGame {
       sharkN.yaw(angle);
       
       sharkSE.loadAnimation("moveShark", "sharkAvatar.rka");
+      
+      //cubes
+      cube1E = sm.createEntity("cube1", "cube.obj");
+      cube2E = sm.createEntity("cube2", "cube.obj");
+      cube3E = sm.createEntity("cube3", "cube.obj");
+      cube1E.setPrimitive(Primitive.TRIANGLES);
+      cube2E.setPrimitive(Primitive.TRIANGLES);
+      cube3E.setPrimitive(Primitive.TRIANGLES);
+      
+      SceneNode controlStuff = sm.getRootSceneNode().createChildSceneNode("myControlStuffNode");
+      cube1N = controlStuff.createChildSceneNode(cube1E.getName() + "Node");
+      cube2N = controlStuff.createChildSceneNode(cube2E.getName() + "Node");
+      cube3N = controlStuff.createChildSceneNode(cube3E.getName() + "Node");
+
+      float cube1Pos1 = 2.0f + r1.nextFloat() * (10.0f - 2.0f);
+      float cube1Pos2 = 2.0f + r1.nextFloat() * (10.0f - 2.0f);
+
+      float cube2Pos1 = 2.0f + r2.nextFloat() * (10.0f - 2.0f);
+      float cube2Pos2 = 2.0f + r2.nextFloat() * (10.0f - 2.0f);
+
+      float cube3Pos1 = 2.0f + r3.nextFloat() * (10.0f - 2.0f);
+      float cube3Pos2 = 2.0f + r3.nextFloat() * (10.0f - 2.0f);
+      
+      cube1N.moveBackward(cube1Pos1);
+      cube1N.moveLeft(cube1Pos1);
+      cube1N.moveRight(cube1Pos2);;
+      cube1N.moveDown(145f);
+      
+      cube2N.moveBackward(cube2Pos1);
+      cube2N.moveLeft(cube2Pos1);
+      cube2N.moveRight(cube2Pos2);
+      cube2N.moveDown(145f);
+      
+      cube3N.moveBackward(cube3Pos1);
+      cube3N.moveLeft(cube3Pos1);
+      cube3N.moveRight(cube3Pos2);;
+      cube3N.moveDown(145f);
+      
+      cube1N.attachObject(cube1E);
+      cube1N.scale(.25f, .25f, .25f);
+        
+      cube2N.attachObject(cube2E);
+      cube2N.scale(.25f, .25f, .25f);
+        
+      cube3N.attachObject(cube3E);
+      cube3N.scale(.25f, .25f, .25f);
+
+      stretch.addNode(controlStuff);
+      rotateController.addNode(controlStuff);
       
       //lights
       sm.getAmbientLight().setIntensity(new Color(.1f, .1f, .1f));
@@ -513,31 +567,35 @@ public class MyGame extends VariableFrameRateGame {
 	   float up[] = {0, 1, 0};
 	   double[] temptf;
 	
-	   if (foodCount == 1) {
+	   if (sm.hasSceneNode("sphere1Node")) {
 		   SceneNode node1 = sm.getSceneNode("sphere1Node");
 		   temptf = toDoubleArray(node1.getLocalTransform().toFloatArray());
 		   physSphere1 = physEng.addSphereObject(physEng.nextUID(),
 				   mass, temptf, 2.0f);
 		   node1.setPhysicsObject(physSphere1);
-	   } else if (foodCount == 2) {
+	   }
+	   if (sm.hasSceneNode("sphere2Node")) {
 		   SceneNode node2 = sm.getSceneNode("sphere2Node");
 		   temptf = toDoubleArray(node2.getLocalTransform().toFloatArray());
 		   physSphere2 = physEng.addSphereObject(physEng.nextUID(),
 				   mass, temptf, 2.0f);
 		   node2.setPhysicsObject(physSphere2);
-	   } else if (foodCount == 3) {
+	   }
+	   if (sm.hasSceneNode("sphere3Node")) {
 		   SceneNode node3 = sm.getSceneNode("sphere3Node");
 		   temptf = toDoubleArray(node3.getLocalTransform().toFloatArray());
 		   physSphere3 = physEng.addSphereObject(physEng.nextUID(),
 				   mass, temptf, 2.0f);
 		   node3.setPhysicsObject(physSphere3);
-	   } else if (foodCount == 4) {
+	   }
+	   if (sm.hasSceneNode("sphere4Node")) {
 		   SceneNode node4 = sm.getSceneNode("sphere4Node");
 		   temptf = toDoubleArray(node4.getLocalTransform().toFloatArray());
 		   physSphere4 = physEng.addSphereObject(physEng.nextUID(),
 				   mass, temptf, 2.0f);
 		   node4.setPhysicsObject(physSphere4);
-	   } else if (foodCount == 5) {
+	   }
+	   if (sm.hasSceneNode("sphere5Node")) {
 		   SceneNode node5 = sm.getSceneNode("sphere5Node");
 		   temptf = toDoubleArray(node5.getLocalTransform().toFloatArray());
 		   physSphere5 = physEng.addSphereObject(physEng.nextUID(),
@@ -613,8 +671,7 @@ public class MyGame extends VariableFrameRateGame {
 			   dist = distDetection(temp,dolphin);
 			   mag = dist.length();
 			   if (Math.abs(mag) < 0.5f) {
-				   temp.setLocalScale(0.01f,0.01f,0.01f);
-				   //temp.translate(0,-10f,0);
+				   shrink.addNode(temp);
 				   score++;
    				}
 		   }

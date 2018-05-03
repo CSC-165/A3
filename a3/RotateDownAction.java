@@ -22,7 +22,7 @@ public class RotateDownAction implements Action{
 	public void performAction(float arg0, Event arg1) {
 		time = (game.getEngine().getElapsedTimeMillis())/1000;
 		node.pitch(angle);
-		//game.detectCollision();
+		game.detectCollision();
 	}
 
 }

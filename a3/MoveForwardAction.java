@@ -20,6 +20,7 @@ public class MoveForwardAction extends AbstractInputAction {
 	  time = (game.getEngine().getElapsedTimeMillis())/1000;
 	  node.moveForward(time);
 	  game.updateVerticalPos();
+	  game.detectCollision();
    }
    
 }

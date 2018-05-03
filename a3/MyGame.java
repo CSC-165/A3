@@ -36,7 +36,7 @@ import javax.script.ScriptException;
 import myGameEngine.OrbitCameraController;
 import myGameEngine.ShrinkController;
 
-//import com.jogamp.*;
+import com.jogamp.openal.ALFactory;
 
 public class MyGame extends VariableFrameRateGame {
 
@@ -337,7 +337,7 @@ public class MyGame extends VariableFrameRateGame {
       setupInputs(sm);
       setupOrbitCameras(eng,sm);
       
-      //initAudio(sm);
+      initAudio(sm);
 
    }
    
@@ -496,17 +496,18 @@ public class MyGame extends VariableFrameRateGame {
          return;
       }
 
-      oceanTrack = audioMgr.createAudioResource("oceanMusic.mp3",
+      oceanTrack = audioMgr.createAudioResource("oceanMusic.wav",
       AudioResourceType.AUDIO_SAMPLE);
 
       backgroundMusic = new Sound(oceanTrack,
-      SoundType.SOUND_EFFECT, 100, true);
+      SoundType.SOUND_MUSIC, 100, true);
    
       backgroundMusic.initialize(audioMgr);
 
       backgroundMusic.setMaxDistance(10.0f);
       backgroundMusic.setMinDistance(0.5f);
       backgroundMusic.setRollOff(5.0f);
+      
       SceneNode dolphinN = sm.getSceneNode("myDolphinNode");
       backgroundMusic.setLocation(dolphinN.getWorldPosition());
       setEarParameters(sm);

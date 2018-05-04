@@ -46,16 +46,16 @@ public class ProtocolClient extends GameConnectionClient {
          }                              // receive "dsfr"
          if ((msgTokens[0].compareTo("dsfr") == 0 ) || (msgTokens[0].compareTo("create")==0)) { // format: create, remoteId, x,y,z or dsfr, remoteId, x,y,z
             UUID ghostID = UUID.fromString(msgTokens[1]);
-            Vector3 ghostPosition = Vector3f.createFrom(
+            Vector3f ghostPosition = (Vector3f) Vector3f.createFrom(
             Float.parseFloat(msgTokens[2]),
             Float.parseFloat(msgTokens[3]),
             Float.parseFloat(msgTokens[4]));
             
-            try { 
+            //try { 
                createGhostAvatar(ghostID, ghostPosition);
-            } catch (IOException e) { 
-               System.out.println("error creating ghost avatar");
-            } 
+            //} catch (IOException e) { 
+            //   System.out.println("error creating ghost avatar");
+            //} 
          }
 
          if (msgTokens[0].compareTo("wsds") == 0) { // rec. “create…” 
@@ -71,6 +71,14 @@ public class ProtocolClient extends GameConnectionClient {
       }
    }
    
+   public void removeGhostAvatar(UUID id) {
+      System.out.println(id + " removed.");
+   }
+   
+   public void createGhostAvatar(UUID id, Vector3f position) {
+      System.out.println("Ghost avatar created");
+   }
+   
    public void sendJoinMessage() { // format: join, localId 
       try { 
          sendPacket(new String("join," + id.toString()));
@@ -82,7 +90,7 @@ public class ProtocolClient extends GameConnectionClient {
    public void sendCreateMessage(Vector3f pos) { // format: (create, localId, x,y,z)
       try { 
          String message = new String("create," + id.toString());
-         message += "," + pos.getX()+"," + pos.getY() + "," + pos.getZ();
+         message += "," + pos.x()+"," + pos.y() + "," + pos.z();
          sendPacket(message);
       }
       catch (IOException e) { 

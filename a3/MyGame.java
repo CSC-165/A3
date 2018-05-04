@@ -28,6 +28,7 @@ import ray.audio.*;
 import ray.rage.rendersystem.gl4.GL4RenderSystem;
 import ray.networking.IGameConnection.ProtocolType;
 import ray.input.action.AbstractInputAction;
+import net.java.games.input.Event;
 
 import ray.physics.PhysicsEngine;
 import ray.physics.PhysicsObject;
@@ -215,9 +216,9 @@ public class MyGame extends VariableFrameRateGame {
       gameObjectsToRemove.clear();
    }
    
-   public Vector3 getPlayerPosition() { 
+   public Vector3f getPlayerPosition() { 
       SceneNode dolphinN = sceneM.getSceneNode("dolphinNode");
-      return dolphinN.getWorldPosition();
+      return (Vector3f) dolphinN.getWorldPosition();
    }
    
    public void addGhostAvatarToGameWorld(GhostAvatar avatar) throws IOException { 
@@ -230,8 +231,8 @@ public class MyGame extends VariableFrameRateGame {
          ghostN.setLocalPosition(1, 1, 1);
          avatar.setNode(ghostN);
          avatar.setEntity(ghostE);
-         Vector3f position = new Vector3f(float [1.0]);
-         avatar.setPosition(position);
+         //Vector3 position = new Vector3(1.0f, 1.0f, 1.0f);
+         avatar.setPosition((Vector3f)Vector3f.createFrom(1.0f, 1.0f, 1.0f));
       } 
    }
    

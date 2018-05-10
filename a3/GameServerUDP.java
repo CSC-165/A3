@@ -25,6 +25,7 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
                UUID clientID = UUID.fromString(msgTokens[1]);
                addClient(ci, clientID);
                sendJoinedMessage(clientID, true);
+               System.out.println("clientID " + clientID.toString() + " has joined");
             }
             catch (IOException e) { 
                e.printStackTrace();
@@ -51,7 +52,10 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
       
       // case where server receives a DETAILS-FOR message
       if (msgTokens[0].compareTo("dsfr") == 0) { 
-         // etc….. 
+         UUID clientID = UUID.fromString(msgTokens[1]);
+         UUID remID = UUID.fromString(msgTokens[2]);
+         String[] pos = { msgTokens[3], msgTokens[4], msgTokens[5] };
+         sndDetailsMsg(clientID, remID, pos); 
       }
 
       // case where server receives a MOVE message
@@ -86,6 +90,9 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
          message += "," + position[1];
          message += "," + position[2];
          forwardPacketToAll(message, clientID);
+         
+         System.out.println("Letting all other clients know that " + clientID.toString() + " is at position ("
+                    + position[0] + ", " + position[1] + ", " + position[2] + ")");
       }
       catch (IOException e) { 
          e.printStackTrace();
@@ -93,12 +100,26 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
    }
    
    public void sndDetailsMsg(UUID clientID, UUID remoteId, String[] position) { 
-      // etc….. 
+      try {
+            String message = new String("create," + clientID.toString());
+            message += "," + position[0];
+            message += "," + position[1];
+            message += "," + position[2];
+            sendPacket(message, remoteId);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } 
    }
    
-   public void sendWantsDetailsMessages(UUID clientID) { 
-      // etc….. 
-   }
+   public void sendWantsDetailsMessages(UUID clientID) {
+        try {
+            System.out.println(clientID.toString() + " requesting details from everyone already joined");
+            String message = new String("wsds," + clientID.toString());
+            forwardPacketToAll(message, clientID);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
    
    public void sendMoveMessages(UUID clientID, String[] position) { 
       // etc….. 

@@ -9,6 +9,7 @@ import ray.networking.client.GameConnectionClient;
 import ray.networking.IGameConnection.ProtocolType;
 import ray.rml.Vector3f;
 import ray.rage.scene.*;
+import ray.rml.Vector3;
 
 public class ProtocolClient extends GameConnectionClient { 
    
@@ -51,20 +52,19 @@ public class ProtocolClient extends GameConnectionClient {
             Float.parseFloat(msgTokens[3]),
             Float.parseFloat(msgTokens[4]));
             
-            //try { 
-               createGhostAvatar(ghostID, ghostPosition);
-            //} catch (IOException e) { 
-            //   System.out.println("error creating ghost avatar");
-            //} 
+            System.out.println("Client " + ghostID.toString() + " has joined at position " + ghostPosition.toString());
+                try {
+                    createGhostAvatar(ghostID, ghostPosition);
+                } catch (IOException e) {
+                    System.out.println(ghostID.toString() + " already exists, skipping creation of duplicate ghost");
+                }
          }
 
          if (msgTokens[0].compareTo("wsds") == 0) { // rec. “create…” 
-            // etc….. 
+            sendDetailsForMessage(UUID.fromString(msgTokens[1]), game.getPlayerPosition()); 
          }
          
-         if (msgTokens[0].compareTo("wsds") == 0) { // rec. “wants…” 
-            // etc….. 
-         }
+        
          if (msgTokens[0].compareTo("move") == 0) { // rec. “move...” 
             // etc….. 
          }
@@ -75,8 +75,10 @@ public class ProtocolClient extends GameConnectionClient {
       System.out.println(id + " removed.");
    }
    
-   public void createGhostAvatar(UUID id, Vector3f position) {
-      System.out.println("Ghost avatar created");
+   public void createGhostAvatar(UUID id, Vector3 position) throws IOException {
+      GhostAvatar ghostAvatar = new GhostAvatar(id, position);
+      game.addGhostAvatarToGameWorld(ghostAvatar);
+      ghostAvatars.add(ghostAvatar);
    }
    
    public void sendJoinMessage() { // format: join, localId 
@@ -87,7 +89,7 @@ public class ProtocolClient extends GameConnectionClient {
       } 
    }
    
-   public void sendCreateMessage(Vector3f pos) { // format: (create, localId, x,y,z)
+   public void sendCreateMessage(Vector3 pos) { // format: (create, localId, x,y,z)
       try { 
          String message = new String("create," + id.toString());
          message += "," + pos.x()+"," + pos.y() + "," + pos.z();
@@ -102,9 +104,18 @@ public class ProtocolClient extends GameConnectionClient {
       // etc….. 
    }
    
-   public void sendDetailsForMessage(UUID remId, Vector3f pos) { 
-      // etc….. 
-   }
+   public void sendDetailsForMessage(UUID remId, Vector3 pos) { // etc…..
+        try {
+            // sndDetailsMsg(UUID clientID, UUID remoteId, String[] position)
+            System.out.println(
+                    "Send my position (" + pos.x() + "," + pos.y() + "," + pos.z() + ") to client " + remId.toString());
+            String message = new String("dsfr," + id.toString());
+            message += "," + remId.toString() + "," + pos.x() + "," + pos.y() + "," + pos.z();
+            sendPacket(message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
    public void sendMoveMessage(Vector3f pos) { 
       // etc….. 

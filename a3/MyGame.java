@@ -62,7 +62,7 @@ public class MyGame extends VariableFrameRateGame {
 	StretchController stretch = new StretchController();
 	private OrbitCameraController orbitController;
 	
-	private SceneNode cube1N, cube2N, cube3N;
+	private SceneNode cube1N, cube2N, cube3N, sharkN, dolphinN;
 	private Entity cube1E, cube2E, cube3E;
 	
 	private SceneNode dlightNode;
@@ -75,18 +75,17 @@ public class MyGame extends VariableFrameRateGame {
 	private Angle angle = Degreef.createFrom(-90.0f);
 	
 	//physics/collision detection
-	private SceneNode groundN;
+	private SceneNode mineN, groundN;
+	private SkeletalEntity mineSE;
 	private PhysicsEngine physEng;
-	private PhysicsObject physSphere1, physSphere2, physSphere3, 
-		physSphere4, physSphere5, groundPlane;
+	private PhysicsObject physMine,  groundPlane;
 	private boolean running = false;
 	private Random r1 = new Random();
 	private Random r2 = new Random();
 	private Random r3 = new Random();
-	private int foodCount = 0;
 
 	private Iterator<SceneNode> iter;
-	private int score = 0;
+	private int health = 0;
    
    private IAudioManager audioMgr;
    private Sound backgroundMusic;
@@ -122,7 +121,6 @@ public class MyGame extends VariableFrameRateGame {
 		System.out.println("1 to start/stop shark animation");
 		System.out.println("2 to start/stop snowman animation");
 		
-		System.out.println("\nPress SPACE to drop food");
 		System.out.println("0 to turn directional light on/off");
    }
 
@@ -275,7 +273,7 @@ public class MyGame extends VariableFrameRateGame {
 	  Entity dolphinE = sm.createEntity("myDolphin", "dolphinHighPoly.obj");
       dolphinE.setPrimitive(Primitive.TRIANGLES);
       
-      SceneNode dolphinN = sm.getRootSceneNode().createChildSceneNode(dolphinE.getName() + "Node");
+      dolphinN = sm.getRootSceneNode().createChildSceneNode(dolphinE.getName() + "Node");
       Angle faceFront = Degreef.createFrom(45.0f);
         
       dolphinN.moveBackward(0.5f);
@@ -284,6 +282,7 @@ public class MyGame extends VariableFrameRateGame {
       dolphinN.attachObject(dolphinE);
    
       //External objects
+      //snowman
       snowmanSE = sm.createSkeletalEntity("snowman", "snowman.rkm", "snowman.rks");
       Texture tex2 = sm.getTextureManager().getAssetByPath("coloredgoodsnowman.png");
       TextureState tstate2 = (TextureState) sm.getRenderSystem().createRenderState(RenderState.Type.TEXTURE);
@@ -297,7 +296,8 @@ public class MyGame extends VariableFrameRateGame {
       snowmanN.moveDown(149f);
       
       snowmanSE.loadAnimation("waveAnimation", "snowman.rka");
-
+      
+      //shark
       SkeletalEntity sharkSE = sm.createSkeletalEntity("sharkAvatar", "sharkAvatar.rkm",  
     		  "sharkAvatar.rks");
       Texture tex = sm.getTextureManager().getAssetByPath("sharkAvatarUV.jpg");
@@ -306,7 +306,7 @@ public class MyGame extends VariableFrameRateGame {
       tstate.setTexture(tex);
       sharkSE.setRenderState(tstate);
       
-      SceneNode sharkN = dolphinN.createChildSceneNode("sharkNode");
+      sharkN = dolphinN.createChildSceneNode("sharkNode");
       sharkN.attachObject(sharkSE);
       sharkN.scale(0.15f,0.15f,0.15f);
       sharkN.translate(-0.75f, 0f, -0.75f);
@@ -376,11 +376,20 @@ public class MyGame extends VariableFrameRateGame {
       dolphinN.attachObject((Light)jsEngine.get("plight"));
       
       //physics
+      mineSE = sm.createSkeletalEntity("mine","mine.rkm","mine.rks");
+	  Texture tex3 = sm.getTextureManager().getAssetByPath("mine.jpg");
+	  TextureState tstate3 = (TextureState)sm.getRenderSystem().
+		   createRenderState(RenderState.Type.TEXTURE);
+	  tstate3.setTexture(tex3);
+	  mineSE.setRenderState(tstate3);
+      mineN = sm.getRootSceneNode().createChildSceneNode("mineNode");
+	  mineN.attachObject(mineSE);
+	  mineN.scale(0.25f, 0.25f, 0.25f);
+	  
       Entity groundE = sm.createEntity(GROUND_E, "cube.obj");
       groundN = sm.getRootSceneNode().createChildSceneNode(GROUND_N);
       groundN.attachObject(groundE);
-      groundN.setLocalPosition(0,-200,-2);
-      groundN.scale(3f,0.5f,3f);
+      groundN.moveDown(200f);
       
       setupInputs(sm);
       setupOrbitCameras(eng,sm);
@@ -418,7 +427,6 @@ public class MyGame extends VariableFrameRateGame {
 
    
    protected void setupOrbitCameras(Engine eng, SceneManager sm) {
-	   SceneNode dolphinN = sm.getSceneNode("myDolphinNode");
 	   SceneNode cameraN = sm.getSceneNode("MainCameraNode");
 	   Camera camera = sm.getCamera("MainCamera");
 	   String kbName = im.getKeyboardName();
@@ -432,8 +440,6 @@ public class MyGame extends VariableFrameRateGame {
       
       String keyboard1 = im.getKeyboardName();
       String gamePad1 = im.getFirstGamepadName();
-      
-      SceneNode dolphinN = getEngine().getSceneManager().getSceneNode("myDolphinNode");
       
       moveForwardAction = new MoveForwardAction(this, dolphinN);
       moveBackwardAction = new MoveBackwardAction(this, dolphinN);
@@ -503,7 +509,7 @@ public class MyGame extends VariableFrameRateGame {
 	   elapsTime += engine.getElapsedTimeMillis();
 	   elapsTimeSec = Math.round(elapsTime/1000.0f);
 	   elapsTimeStr = Integer.toString(elapsTimeSec);
-	   dispStr = "Assignment #3   " + "Player 1   " + "Time = " + elapsTimeStr + "   Score = " + score;
+	   dispStr = "Assignment #3   " + "Player 1   " + "Time = " + elapsTimeStr + "   Health = " + health;
 	   rs.setHUD(dispStr, 15, 15);
 	
 	   im.update(elapsTime);
@@ -522,7 +528,11 @@ public class MyGame extends VariableFrameRateGame {
       backgroundMusic.setLocation(dolphinN.getWorldPosition());
       setEarParameters(sm);
       
-	   //physics
+	  //physics
+      if (elapsTimeSec % 10 == 0) 
+    	  moveMine(sm);
+      detectCollision();
+          
 	   if (running) {
 		Matrix4 mat;
 		physEng.update(elapsTime);
@@ -556,50 +566,23 @@ public class MyGame extends VariableFrameRateGame {
       backgroundMusic.setMinDistance(0.5f);
       backgroundMusic.setRollOff(5.0f);
       
-      SceneNode dolphinN = sm.getSceneNode("myDolphinNode");
       backgroundMusic.setLocation(dolphinN.getWorldPosition());
       setEarParameters(sm);
       backgroundMusic.play();
    }
    
-   //physics
-   private void graphicsWorldObjects() throws IOException {
-	   Engine eng = this.getEngine();
-	   SceneManager sm = eng.getSceneManager();
-	   
-	   if (foodCount == 1 && sm.hasEntity("sphere5")) {
-		   for (int i = 1; i < 6; i++) {
-			   String s = Integer.toString(i);
-			   if (sm.hasSceneNode("sphere"+s+"Node")) {
-				   sm.destroySceneNode("sphere"+s+"Node");
-			   }
-			   sm.destroyEntity("sphere"+s);
-		   }
-	   }
-	   
-	   Texture sphereTex = eng.getTextureManager().getAssetByPath("red.jpeg");
-	   TextureState sphereTexState = (TextureState)sm.getRenderSystem().
-			   createRenderState(RenderState.Type.TEXTURE);
-	   sphereTexState.setTexture(sphereTex);
-	   
-	   Float translate1 = (float)(r1.nextInt(8) - 4);
-	   Float translate2 = (float)(r2.nextInt(8) - 4);
-	   String s = Integer.toString(foodCount);
-	   Entity sphere = sm.createEntity("sphere"+ s, "sphere.obj");
-	   sphere.setRenderState(sphereTexState);
-	   SceneNode sphereNode = sm.getRootSceneNode().createChildSceneNode("sphere"+s+"Node");
-	   sphereNode.attachObject(sphere);
-	   sphereNode.scale(0.2f,0.2f,0.2f);
-	   sphereNode.translate(translate1, 0, translate2);
-	   sphereNode.moveDown(142f);
-	      
-	   initPhysicsSystem();
-	   createRagePhysicsWorld(sm);  
+   public void moveMine(SceneManager sm) {
+	   running = false;
+	   mineN.setLocalPosition(dolphin.getWorldPosition());
+	   mineN.moveUp(1f);
+       initPhysicsSystem();
+ 	   createRagePhysicsWorld(sm);
+	   running = true;
    }
    
    private void initPhysicsSystem() {
 	   String engine = "ray.physics.JBullet.JBulletPhysicsEngine";
-	   float[] gravity = {0, -0.5f, 0};
+	   float[] gravity = {0, -0.75f, 0};
 	   
 	   physEng = PhysicsEngineFactory.createPhysicsEngine(engine);
 	   physEng.initSystem();
@@ -610,42 +593,11 @@ public class MyGame extends VariableFrameRateGame {
 	   float mass = 1.0f;
 	   float up[] = {0, 1, 0};
 	   double[] temptf;
-	
-	   if (sm.hasSceneNode("sphere1Node")) {
-		   SceneNode node1 = sm.getSceneNode("sphere1Node");
-		   temptf = toDoubleArray(node1.getLocalTransform().toFloatArray());
-		   physSphere1 = physEng.addSphereObject(physEng.nextUID(),
-				   mass, temptf, 2.0f);
-		   node1.setPhysicsObject(physSphere1);
-	   }
-	   if (sm.hasSceneNode("sphere2Node")) {
-		   SceneNode node2 = sm.getSceneNode("sphere2Node");
-		   temptf = toDoubleArray(node2.getLocalTransform().toFloatArray());
-		   physSphere2 = physEng.addSphereObject(physEng.nextUID(),
-				   mass, temptf, 2.0f);
-		   node2.setPhysicsObject(physSphere2);
-	   }
-	   if (sm.hasSceneNode("sphere3Node")) {
-		   SceneNode node3 = sm.getSceneNode("sphere3Node");
-		   temptf = toDoubleArray(node3.getLocalTransform().toFloatArray());
-		   physSphere3 = physEng.addSphereObject(physEng.nextUID(),
-				   mass, temptf, 2.0f);
-		   node3.setPhysicsObject(physSphere3);
-	   }
-	   if (sm.hasSceneNode("sphere4Node")) {
-		   SceneNode node4 = sm.getSceneNode("sphere4Node");
-		   temptf = toDoubleArray(node4.getLocalTransform().toFloatArray());
-		   physSphere4 = physEng.addSphereObject(physEng.nextUID(),
-				   mass, temptf, 2.0f);
-		   node4.setPhysicsObject(physSphere4);
-	   }
-	   if (sm.hasSceneNode("sphere5Node")) {
-		   SceneNode node5 = sm.getSceneNode("sphere5Node");
-		   temptf = toDoubleArray(node5.getLocalTransform().toFloatArray());
-		   physSphere5 = physEng.addSphereObject(physEng.nextUID(),
-				   mass, temptf, 2.0f);
-		   node5.setPhysicsObject(physSphere5);
-	   }
+	   
+	   temptf = toDoubleArray(mineN.getLocalTransform().toFloatArray());
+	   physMine = physEng.addSphereObject(physEng.nextUID(),
+			   mass, temptf, 2.0f);
+	   mineN.setPhysicsObject(physMine);
 	   
 	   temptf = toDoubleArray(groundN.getLocalTransform().toFloatArray());
 	   groundPlane = physEng.addStaticPlaneObject(physEng.nextUID(),
@@ -701,47 +653,24 @@ public class MyGame extends VariableFrameRateGame {
    }
    
    public void detectCollision() {
-	   SceneManager sm = getEngine().getSceneManager();
-	   iter = sm.getSceneNodes().iterator();
-	   SceneNode dolphin = sm.getSceneNode("myDolphinNode");
-	   SceneNode temp;
-	   Vector3 dist;	
+	   SceneManager sm = getEngine().getSceneManager();	
 	   Float mag;
    	
-	   while (iter.hasNext()) {
-		   temp = iter.next();
-		   String s = temp.getName();
-		   if (s.startsWith("sphere")) {
-			   dist = distDetection(temp,dolphin);
-			   mag = dist.length();
-			   if (Math.abs(mag) < 0.5f) {
-				   shrink.addNode(temp);
-				   score++;
-   				}
-		   }
-	   }
+	   mag = distDetection(mineN,dolphinN).length();
+	   if (Math.abs(mag) < 0.1f) {
+		   health --;
+		   sm.getAmbientLight().setIntensity(new Color(1.0f,0.0f,0.0f));
+	   }else
+		   sm.getAmbientLight().setIntensity(new Color(0.1f, 0.1f, 0.1f));
    }
    
    @Override
    public void keyPressed(KeyEvent e) {
-	   Engine eng = this.getEngine();
 	   SceneManager sm = this.getEngine().getSceneManager();
 	  switch (e.getKeyCode()) {
          case KeyEvent.VK_2:
             doTheWave();
             break;
-         case KeyEvent.VK_SPACE:
-        	 if (foodCount < 5)
-        		 foodCount++;
-        	 else 
-        		 foodCount = 1;
-        	 try {
-        		 graphicsWorldObjects();
-        	 } catch (IOException e1) {
-        		 e1.printStackTrace();
-        	 }
-        	 running = true;
-        	 break;
          case KeyEvent.VK_0:
         	 lightCount++;
         	 if (lightCount % 2 != 0) {
@@ -758,6 +687,7 @@ public class MyGame extends VariableFrameRateGame {
         		 sm.destroySceneNode(dlightNode);
         		 sm.destroyLight(dlight);
         	 }
+        	 break;
       }
       super.keyPressed(e);
    }

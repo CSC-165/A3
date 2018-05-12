@@ -86,6 +86,7 @@ public class MyGame extends VariableFrameRateGame {
    private ProtocolClient protClient;
    private boolean isClientConnected;
    private Vector<UUID> gameObjectsToRemove;
+   private Iterator<UUID> it;
    
    private SceneManager sceneM;
 
@@ -106,6 +107,47 @@ public class MyGame extends VariableFrameRateGame {
    private IAudioManager audioMgr;
    private Sound backgroundMusic;
 	
+   public MyGame(String serverAddr, int sPort) {
+		super();
+      
+      this.serverAddress = serverAddr;
+      this.serverPort = sPort;
+      this.serverProtocol = ProtocolType.UDP;
+      
+		System.out.println("Avatar Controls: ");
+		System.out.println("W to move forward");
+		System.out.println("S to move backwards");
+		System.out.println("A to move left");
+		System.out.println("D to move right\n");
+      
+		System.out.println("LEFT arrow to rotate left");
+		System.out.println("RIGHT arrow to rotate right");
+		System.out.println("UP arrow to rotate up");
+		System.out.println("DOWN arrow to rotate down");
+      
+		System.out.println("\nCamera Controls: ");
+		System.out.println("V to zoom in");
+		System.out.println("B to zoom out");
+		System.out.println("L to orbit right");
+		System.out.println("J to orbit left");
+		System.out.println("I to orbit up");
+		System.out.println("K to orbit down");
+      
+		System.out.println("\nAvatar with Camera Controls: ");
+		System.out.println("F to rotate camera/avatar right");
+		System.out.println("H to rotate camera/avatar left");
+		System.out.println("T to rotate camera/avatar up");
+		System.out.println("G to rotate camera/avatar down");
+		
+		System.out.println("\nBlender object Controls:");
+		System.out.println("1 to start/stop shark animation");
+		System.out.println("2 to start/stop snowman animation");
+		
+		System.out.println("\nPress SPACE to drop food");
+		System.out.println("0 to turn directional light on/off");
+   }
+
+   
 	public MyGame() {
 		super();
 		System.out.println("Avatar Controls: ");
@@ -142,7 +184,7 @@ public class MyGame extends VariableFrameRateGame {
    }
 
    public static void main(String[] args) {
-      MyGame game = new MyGame();
+      MyGame game = new MyGame("127.0.0.1", 6000);
       try {
          game.startup();
          
@@ -208,7 +250,7 @@ public class MyGame extends VariableFrameRateGame {
       }
 
       // remove ghost avatars for players who have left the game
-      Iterator<UUID> it = gameObjectsToRemove.iterator();
+      it = gameObjectsToRemove.iterator();
 
       while(it.hasNext()) { 
          sceneM.destroySceneNode(it.next().toString());
@@ -472,6 +514,7 @@ public class MyGame extends VariableFrameRateGame {
       
       setupInputs(sm);
       setupOrbitCameras(eng,sm);
+      setupNetworking();
       
       initAudio(sm);
 
@@ -820,6 +863,8 @@ public class MyGame extends VariableFrameRateGame {
          case KeyEvent.VK_2:
             doTheWave();
             break;
+         case KeyEvent.VK_ESCAPE:
+            System.exit(0);
          case KeyEvent.VK_SPACE:
         	 if (foodCount < 5)
         		 foodCount++;

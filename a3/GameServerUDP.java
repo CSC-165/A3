@@ -19,6 +19,8 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
          // case where server receives a JOIN message
          // format: join,localid
          if (msgTokens[0].compareTo("join") == 0) { 
+            System.out.println("join message heard");
+            System.out.println("msgTokens: " + message);
             try { 
                IClientInfo ci;
                ci = getServerSocket().createClientInfo(senderIP, senderPort);
@@ -35,6 +37,7 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
       // case where server receives a CREATE message
       // format: create,localid,x,y,z
       if (msgTokens[0].compareTo("create") == 0) { 
+         System.out.println("Received a create message");
          UUID clientID = UUID.fromString(msgTokens[1]);
          String[] pos = {msgTokens[2], msgTokens[3], msgTokens[4]};
          sendCreateMessages(clientID, pos);
@@ -65,12 +68,15 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
       try { 
          String message = new String("join,");
          if (success) { 
-            message += "success"; 
+            message += "success";
+             
          }
          
          else {
             message += "failure";
          }
+         System.out.println(message);
+         System.out.println("sending packet...");
          sendPacket(message, clientID);
       }
       catch (IOException e) { 
@@ -97,7 +103,17 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
    }
    
    public void sendWantsDetailsMessages(UUID clientID) { 
-      // etc….. 
+      try {
+            System.out.println(clientID.toString() + " requesting details from everyone already joined");
+            String message = new String("wsds," + clientID.toString());
+            System.out.println("Sending wants details message: " + message);
+            forwardPacketToAll(message, clientID);
+            System.out.println("Packet forwarded to all...");
+            
+        } catch (IOException e) {
+            System.out.println("error in sending packet");
+            e.printStackTrace();
+        } 
    }
    
    public void sendMoveMessages(UUID clientID, String[] position) { 

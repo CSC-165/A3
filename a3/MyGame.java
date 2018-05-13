@@ -68,6 +68,7 @@ public class MyGame extends VariableFrameRateGame {
 	StretchController stretch = new StretchController();
 	private OrbitCameraController orbitController;
 	
+   private SceneNode dolphinN;
 	private SceneNode cube1N, cube2N, cube3N;
 	private Entity cube1E, cube2E, cube3E;
 	
@@ -241,10 +242,12 @@ public class MyGame extends VariableFrameRateGame {
       
       else { // ask client protocol to send initial join message to server, with a unique identifier for this client
          protClient.sendJoinMessage();
+         System.out.println("sent join message from protocolclient");
       } 
    }
    
    protected void processNetworking(float elapsTime) { // Process packets received by the client from the server
+      
       if (protClient != null) {
          protClient.processPackets();
       }
@@ -258,9 +261,8 @@ public class MyGame extends VariableFrameRateGame {
       gameObjectsToRemove.clear();
    }
    
-   public Vector3f getPlayerPosition() { 
-      SceneNode dolphinN = sceneM.getSceneNode("dolphinNode");
-      return (Vector3f) dolphinN.getWorldPosition();
+   public Vector3 getPlayerPosition() { 
+      return dolphinN.getWorldPosition();
    }
    
    public void addGhostAvatarToGameWorld(GhostAvatar avatar) throws IOException { 
@@ -402,10 +404,10 @@ public class MyGame extends VariableFrameRateGame {
       tessE2.setTexture(eng, "bottom.jpg");    
       
       //dolphin
-	  Entity dolphinE = sm.createEntity("myDolphin", "dolphinHighPoly.obj");
+	   Entity dolphinE = sm.createEntity("myDolphin", "dolphinHighPoly.obj");
       dolphinE.setPrimitive(Primitive.TRIANGLES);
       
-      SceneNode dolphinN = sm.getRootSceneNode().createChildSceneNode(dolphinE.getName() + "Node");
+      dolphinN = sm.getRootSceneNode().createChildSceneNode(dolphinE.getName() + "Node");
       Angle faceFront = Degreef.createFrom(45.0f);
         
       dolphinN.moveBackward(0.5f);

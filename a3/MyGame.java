@@ -275,13 +275,11 @@ public class MyGame extends VariableFrameRateGame {
          SceneNode ghostN = this.getEngine().getSceneManager().getRootSceneNode().
             createChildSceneNode(avatar.getID().toString());
          ghostN.attachObject(ghostE);
-         ghostN.setLocalPosition(0.0f, -148.0f, -0.5f);
+         ghostN.setLocalPosition(avatar.getPosition());
          avatar.setNode(ghostN);
          avatar.setEntity(ghostE);
-            
-         Vector3 ghostPosition = (Vector3f)Vector3f.createFrom(0.0f, -148.0f, -0.5f);
          
-         avatar.setPosition(ghostPosition);
+         avatar.setPosition(avatar.getPosition());
       } 
    }
    

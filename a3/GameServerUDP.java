@@ -54,7 +54,11 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
       
       // case where server receives a DETAILS-FOR message
       if (msgTokens[0].compareTo("dsfr") == 0) { 
-         // etc….. 
+         System.out.println("heard details for message");
+         UUID clientID = UUID.fromString(msgTokens[1]);
+         UUID remID = UUID.fromString(msgTokens[2]);
+         String[] pos = { msgTokens[3], msgTokens[4], msgTokens[5] };
+         sndDetailsMsg(clientID, remID, pos);
       }
 
       // case where server receives a MOVE message
@@ -92,6 +96,9 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
          message += "," + position[1];
          message += "," + position[2];
          forwardPacketToAll(message, clientID);
+         
+         System.out.println("Letting all other clients know that " + clientID.toString() + " is at position ("
+                    + position[0] + ", " + position[1] + ", " + position[2] + ")");
       }
       catch (IOException e) { 
          e.printStackTrace();
@@ -99,7 +106,16 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
    }
    
    public void sndDetailsMsg(UUID clientID, UUID remoteId, String[] position) { 
-      // etc….. 
+      try {
+            String message = new String("create," + clientID.toString());
+            message += "," + position[0];
+            message += "," + position[1];
+            message += "," + position[2];
+            System.out.println("Sending details message");
+            sendPacket(message, remoteId);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } 
    }
    
    public void sendWantsDetailsMessages(UUID clientID) { 
@@ -108,8 +124,6 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
             String message = new String("wsds," + clientID.toString());
             System.out.println("Sending wants details message: " + message);
             forwardPacketToAll(message, clientID);
-            System.out.println("Packet forwarded to all...");
-            
         } catch (IOException e) {
             System.out.println("error in sending packet");
             e.printStackTrace();

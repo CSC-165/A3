@@ -71,6 +71,7 @@ public class MyGame extends VariableFrameRateGame {
    private SceneNode dolphinN;
 	private SceneNode cube1N, cube2N, cube3N;
 	private Entity cube1E, cube2E, cube3E;
+   private Entity ghostE;
 	
 	private SceneNode dlightNode;
 	private Light dlight;
@@ -107,6 +108,8 @@ public class MyGame extends VariableFrameRateGame {
    
    private IAudioManager audioMgr;
    private Sound backgroundMusic;
+   
+   private String avatarID;
 	
    public MyGame(String serverAddr, int sPort) {
 		super();
@@ -266,17 +269,19 @@ public class MyGame extends VariableFrameRateGame {
    }
    
    public void addGhostAvatarToGameWorld(GhostAvatar avatar) throws IOException { 
-      if (avatar != null) { 
-         Entity ghostE = sceneM.createEntity("ghost", "whatever.obj");
+      if (avatar != null) {  
+         ghostE = this.getEngine().getSceneManager().createEntity("ghost2", "dolphinHighPoly.obj");
          ghostE.setPrimitive(Primitive.TRIANGLES);
-         SceneNode ghostN = sceneM.getRootSceneNode().
-         createChildSceneNode(avatar.getID().toString());
+         SceneNode ghostN = this.getEngine().getSceneManager().getRootSceneNode().
+            createChildSceneNode(avatar.getID().toString());
          ghostN.attachObject(ghostE);
-         ghostN.setLocalPosition(1, 1, 1);
+         ghostN.setLocalPosition(0.0f, -148.0f, -0.5f);
          avatar.setNode(ghostN);
          avatar.setEntity(ghostE);
-         //Vector3 position = new Vector3(1.0f, 1.0f, 1.0f);
-         avatar.setPosition((Vector3f)Vector3f.createFrom(1.0f, 1.0f, 1.0f));
+            
+         Vector3 ghostPosition = (Vector3f)Vector3f.createFrom(0.0f, -148.0f, -0.5f);
+         
+         avatar.setPosition(ghostPosition);
       } 
    }
    

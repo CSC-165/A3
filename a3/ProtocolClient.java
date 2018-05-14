@@ -58,9 +58,11 @@ public class ProtocolClient extends GameConnectionClient {
             
             System.out.println("Client " + ghostID.toString() + " has joined at position " + ghostPosition.toString());
             try { 
+               System.out.println("about to try to create a ghost avatar with ghostID: " + ghostID + " and ghostposition: " + ghostPosition);
                createGhostAvatar(ghostID, ghostPosition);
             } catch (IOException e) { 
                System.out.println("error creating ghost avatar");
+               System.out.println(e);
             } 
          }
 
@@ -83,7 +85,7 @@ public class ProtocolClient extends GameConnectionClient {
       System.out.println(id + " removed.");
    }
    
-   public void createGhostAvatar(UUID id, Vector3f position) throws IOException {
+   public void createGhostAvatar(UUID id, Vector3 position) throws IOException {
       GhostAvatar ghostAvatar = new GhostAvatar(id, position);
       game.addGhostAvatarToGameWorld(ghostAvatar);
       ghostAvatars.add(ghostAvatar);

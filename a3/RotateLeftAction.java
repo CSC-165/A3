@@ -17,7 +17,7 @@ public class RotateLeftAction extends AbstractInputAction {
    }
 
    public void performAction(float time, Event e) { 
-      node.yaw(rotLeft);
+	  node.yaw(rotLeft);
       game.detectCollision();
    }
    

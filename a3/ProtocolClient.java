@@ -11,6 +11,11 @@ import ray.rml.Vector3f;
 import ray.rml.Vector3;
 import ray.rage.scene.*;
 
+import ray.input.action.AbstractInputAction;
+import ray.rage.game.*;
+import ray.rml.*;
+import net.java.games.input.Event;
+
 public class ProtocolClient extends GameConnectionClient { 
    
    private MyGame game;
@@ -99,6 +104,45 @@ public class ProtocolClient extends GameConnectionClient {
              }
                             //game.moveGhostAvatarInGameWorld(ghostID, ghostPosition); 
          }
+         
+         if (msgTokens[0].compareTo("yaw") == 0) { // rec. “move...” 
+            UUID ghostID = UUID.fromString(msgTokens[1]);
+            Angle angle = Degreef.createFrom(Float.parseFloat(msgTokens[2]));
+            
+            GhostAvatar g = null;
+            
+            for (int i = 0; i < ghostAvatars.size(); i++) {
+                 if ((ghostAvatars.get(i).getID().compareTo(ghostID)) == 0) {
+                     // System.out.println("Found the ghost to move");
+                     g = ghostAvatars.get(i);
+                 }
+                 if (g != null) {
+                          g.getNode().yaw(angle);
+                          System.out.println("Should be yawing");
+                          System.out.println("angle: " + angle.valueDegrees());      
+                      }
+             } 
+         }
+         
+         if (msgTokens[0].compareTo("pitch") == 0) { // rec. “move...” 
+            UUID ghostID = UUID.fromString(msgTokens[1]);
+            Angle angle = Degreef.createFrom(Float.parseFloat(msgTokens[2]));
+            
+            GhostAvatar g = null;
+            
+            for (int i = 0; i < ghostAvatars.size(); i++) {
+                 if ((ghostAvatars.get(i).getID().compareTo(ghostID)) == 0) {
+                     // System.out.println("Found the ghost to move");
+                     g = ghostAvatars.get(i);
+                 }
+                 if (g != null) {
+                          g.getNode().pitch(angle);
+                          System.out.println("Should be pitching");
+                          System.out.println("angle: " + angle.valueDegrees());
+                      }
+             }
+                            //game.moveGhostAvatarInGameWorld(ghostID, ghostPosition); 
+         }
       }
    }
    
@@ -152,6 +196,26 @@ public class ProtocolClient extends GameConnectionClient {
       try {
          String message = new String("move," + id.toString());
          message += "," + pos.x() + "," + pos.y() + "," + pos.z();
+         sendPacket(message);
+      } catch (IOException e) {
+         e.printStackTrace();
+      }
+   }
+   
+   public void sendYawMessage(Angle angle) {
+      try {
+         String message = new String("yaw," + id.toString());
+         message += "," + angle.valueDegrees();
+         sendPacket(message);
+      } catch (IOException e) {
+         e.printStackTrace();
+      }
+   }
+   
+   public void sendPitchMessage(Angle angle) {
+      try {
+         String message = new String("pitch," + id.toString());
+         message += "," + angle.valueDegrees();
          sendPacket(message);
       } catch (IOException e) {
          e.printStackTrace();

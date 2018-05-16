@@ -6,6 +6,11 @@ import java.util.UUID;
 import ray.networking.server.GameConnectionServer;
 import ray.networking.server.IClientInfo;
 
+import ray.input.action.AbstractInputAction;
+import ray.rage.game.*;
+import ray.rml.*;
+import net.java.games.input.Event;
+
 public class GameServerUDP extends GameConnectionServer<UUID> {
    public GameServerUDP(int localPort) throws IOException { 
       super(localPort, ProtocolType.UDP); 
@@ -68,6 +73,42 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
          String[] pos = { msgTokens[2], msgTokens[3], msgTokens[4] };
          sendMoveMessages(clientID, pos);
       }
+      
+      if (msgTokens[0].compareTo("yaw") == 0) { 
+         System.out.println("heard yaw message");
+         UUID clientID = UUID.fromString(msgTokens[1]);
+         Angle angle = Degreef.createFrom(Float.parseFloat(msgTokens[2]));
+         sendYawMessages(clientID, angle);
+      }
+      
+      if (msgTokens[0].compareTo("pitch") == 0) { 
+         System.out.println("heard pitch message");
+         UUID clientID = UUID.fromString(msgTokens[1]);
+         Angle angle = Degreef.createFrom(Float.parseFloat(msgTokens[2]));
+         sendPitchMessages(clientID, angle);
+      }
+   }
+   
+   public void sendYawMessages(UUID clientID, Angle angle) {
+      try {
+            String message = new String("yaw," + clientID.toString());
+            message += "," + angle.valueDegrees();
+            System.out.println("Sending yaw messages");
+            forwardPacketToAll(message, clientID);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+   }
+   
+   public void sendPitchMessages(UUID clientID, Angle angle) {
+      try {
+            String message = new String("pitch," + clientID.toString());
+            message += "," + angle.valueDegrees();
+            System.out.println("Sending pitch messages");
+            forwardPacketToAll(message, clientID);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
    }
    
    public void sendJoinedMessage(UUID clientID, boolean success) { 

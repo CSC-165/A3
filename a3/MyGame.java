@@ -286,28 +286,8 @@ public class MyGame extends VariableFrameRateGame {
          avatar.setEntity(ghostE);
          
          avatar.setPosition(avatar.getPosition());
-         
-         /*if (ghostAvatars[0] == null) {
-            ghostAvatars[0] = avatar;
-         } else {
-            ghostAvatars[1] = avatar;
-         }*/
       } 
    }
-   
-   /*public void moveGhostAvatarInGameWorld(UUID id, Vector3 position) {
-      for (int i = 0; i < ghostAvatars.length; i++) {
-         if (ghostAvatars[i].getID().toString() == id.toString()) {
-            ghostAvatars[i].setPosition(position);
-         }
-      }
-      /*while (itr.hasNext()) {
-          GhostAvatar avatar = itr.next();
-          if (avatar.getID().toString() == id.toString()) {
-            avatar.setPosition(position);
-          }
-      }
-   }*/
    
    public void removeGhostAvatarFromGameWorld(GhostAvatar avatar) { 
       if (avatar != null) gameObjectsToRemove.add(avatar.getID());
@@ -601,10 +581,10 @@ public class MyGame extends VariableFrameRateGame {
       moveBackwardAction = new MoveBackwardAction(this, dolphinN, protClient);
       moveLeftAction = new MoveLeftAction(this, dolphinN, protClient);
       moveRightAction = new MoveRightAction(this, dolphinN, protClient);
-      rotateLeftAction = new RotateLeftAction(this, dolphinN);
-      rotateRightAction = new RotateRightAction(this, dolphinN);
-      rotateUpAction = new RotateUpAction(this,dolphinN);
-      rotateDownAction = new RotateDownAction(this,dolphinN);
+      rotateLeftAction = new RotateLeftAction(this, dolphinN, protClient);
+      rotateRightAction = new RotateRightAction(this, dolphinN, protClient);
+      rotateUpAction = new RotateUpAction(this,dolphinN, protClient);
+      rotateDownAction = new RotateDownAction(this,dolphinN, protClient);
       moveSharkAction = new MoveSharkAction(this);
       
       System.out.println("Keyboard: " + keyboard1);

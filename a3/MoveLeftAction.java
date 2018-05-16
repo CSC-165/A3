@@ -19,7 +19,7 @@ public class MoveLeftAction extends AbstractInputAction {
    public void performAction(float time, Event e) { 
 	  time = (game.getEngine().getElapsedTimeMillis())/1000;
 	  node.moveRight(time);
-	  game.updateVerticalPos();
+	  game.updateVerticalPos(node);
 	  game.detectCollision();
    }
    

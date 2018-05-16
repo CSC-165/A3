@@ -36,5 +36,9 @@ public class GhostAvatar {
          return this.position;
       }
       
+      public SceneNode getNode()  {
+         return this.node;
+      }
+      
       // accessors and setters for id, node, entity, and position
 }

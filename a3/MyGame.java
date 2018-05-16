@@ -110,7 +110,13 @@ public class MyGame extends VariableFrameRateGame {
    private Sound backgroundMusic;
    
    private String avatarID;
-	
+   
+   //private Vector<GhostAvatar> ghostAvatars = new Vector<GhostAvatar>();
+   //int a[]=new int[5];
+	//private GhostAvatar ghostAvatars[] = new GhostAvatar[10];
+   //private List<GhostAvatar> ghostAvatars = new ArrayList<GhostAvatar>();
+   //private Iterator<GhostAvatar> itr = ghostAvatars.iterator();
+   
    public MyGame(String serverAddr, int sPort) {
 		super();
       
@@ -270,7 +276,7 @@ public class MyGame extends VariableFrameRateGame {
    
    public void addGhostAvatarToGameWorld(GhostAvatar avatar) throws IOException { 
       if (avatar != null) {  
-         ghostE = this.getEngine().getSceneManager().createEntity("ghost2", "dolphinHighPoly.obj");
+         ghostE = this.getEngine().getSceneManager().createEntity("ghost", "dolphinHighPoly.obj");
          ghostE.setPrimitive(Primitive.TRIANGLES);
          SceneNode ghostN = this.getEngine().getSceneManager().getRootSceneNode().
             createChildSceneNode(avatar.getID().toString());
@@ -280,8 +286,28 @@ public class MyGame extends VariableFrameRateGame {
          avatar.setEntity(ghostE);
          
          avatar.setPosition(avatar.getPosition());
+         
+         /*if (ghostAvatars[0] == null) {
+            ghostAvatars[0] = avatar;
+         } else {
+            ghostAvatars[1] = avatar;
+         }*/
       } 
    }
+   
+   /*public void moveGhostAvatarInGameWorld(UUID id, Vector3 position) {
+      for (int i = 0; i < ghostAvatars.length; i++) {
+         if (ghostAvatars[i].getID().toString() == id.toString()) {
+            ghostAvatars[i].setPosition(position);
+         }
+      }
+      /*while (itr.hasNext()) {
+          GhostAvatar avatar = itr.next();
+          if (avatar.getID().toString() == id.toString()) {
+            avatar.setPosition(position);
+          }
+      }
+   }*/
    
    public void removeGhostAvatarFromGameWorld(GhostAvatar avatar) { 
       if (avatar != null) gameObjectsToRemove.add(avatar.getID());
@@ -517,9 +543,9 @@ public class MyGame extends VariableFrameRateGame {
       groundN.setLocalPosition(0,-200,-2);
       groundN.scale(3f,0.5f,3f);
       
+      setupNetworking();
       setupInputs(sm);
       setupOrbitCameras(eng,sm);
-      setupNetworking();
       
       initAudio(sm);
 
@@ -571,10 +597,10 @@ public class MyGame extends VariableFrameRateGame {
       
       SceneNode dolphinN = getEngine().getSceneManager().getSceneNode("myDolphinNode");
       
-      moveForwardAction = new MoveForwardAction(this, dolphinN);
-      moveBackwardAction = new MoveBackwardAction(this, dolphinN);
-      moveLeftAction = new MoveLeftAction(this, dolphinN);
-      moveRightAction = new MoveRightAction(this, dolphinN);
+      moveForwardAction = new MoveForwardAction(this, dolphinN, protClient);
+      moveBackwardAction = new MoveBackwardAction(this, dolphinN, protClient);
+      moveLeftAction = new MoveLeftAction(this, dolphinN, protClient);
+      moveRightAction = new MoveRightAction(this, dolphinN, protClient);
       rotateLeftAction = new RotateLeftAction(this, dolphinN);
       rotateRightAction = new RotateRightAction(this, dolphinN);
       rotateUpAction = new RotateUpAction(this,dolphinN);

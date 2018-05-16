@@ -76,7 +76,28 @@ public class ProtocolClient extends GameConnectionClient {
             // etc….. 
          //}
          if (msgTokens[0].compareTo("move") == 0) { // rec. “move...” 
-            // etc….. 
+            UUID ghostID = UUID.fromString(msgTokens[1]);
+            Vector3f ghostPosition = (Vector3f) Vector3f.createFrom(
+            Float.parseFloat(msgTokens[2]),
+            Float.parseFloat(msgTokens[3]),
+            Float.parseFloat(msgTokens[4]));
+            
+            GhostAvatar g = null;
+            
+            for (int i = 0; i < ghostAvatars.size(); i++) {
+                 if ((ghostAvatars.get(i).getID().compareTo(ghostID)) == 0) {
+                     // System.out.println("Found the ghost to move");
+                     g = ghostAvatars.get(i);
+                 }
+                 if (g != null) {
+                          g.getNode().setLocalPosition(ghostPosition);
+                          System.out.println("Position should be updated");
+                          System.out.println(ghostPosition);
+                          System.out.println("node: " + g.getNode());
+                          System.out.println("Position: " + g.getPosition());
+                      }
+             }
+                            //game.moveGhostAvatarInGameWorld(ghostID, ghostPosition); 
          }
       }
    }
@@ -127,8 +148,14 @@ public class ProtocolClient extends GameConnectionClient {
         } 
    }
 
-   public void sendMoveMessage(Vector3f pos) { 
-      // etc….. 
+   public void sendMoveMessage(Vector3 pos) { 
+      try {
+         String message = new String("move," + id.toString());
+         message += "," + pos.x() + "," + pos.y() + "," + pos.z();
+         sendPacket(message);
+      } catch (IOException e) {
+         e.printStackTrace();
+      }
    }
    
 }

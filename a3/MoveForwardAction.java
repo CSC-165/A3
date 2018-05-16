@@ -10,10 +10,12 @@ public class MoveForwardAction extends AbstractInputAction {
    private SceneNode node;
    private MyGame game;
    private float time;
+   private ProtocolClient protClient;
    
-   public MoveForwardAction(MyGame g, SceneNode node) {
+   public MoveForwardAction(MyGame g, SceneNode node, ProtocolClient p) {
       this.node = node;
       game = g;
+      protClient = p;
    }
 
    public void performAction(float time, Event e) { 
@@ -21,6 +23,7 @@ public class MoveForwardAction extends AbstractInputAction {
 	  node.moveForward(time);
 	  game.updateVerticalPos();
 	  game.detectCollision();
+     protClient.sendMoveMessage(node.getWorldPosition());
    }
    
 }

@@ -194,7 +194,7 @@ public class MyGame extends VariableFrameRateGame {
    }
 
    public static void main(String[] args) {
-      MyGame game = new MyGame("127.0.0.1", 6000);
+      MyGame game = new MyGame(args[0], Integer.parseInt(args[1]));
       try {
          game.startup();
          
@@ -644,7 +644,6 @@ public class MyGame extends VariableFrameRateGame {
       
       processNetworking(elapsTime);
       
-      backgroundMusic.setLocation(dolphinN.getWorldPosition());
       tickSound.setLocation(mineN.getWorldPosition());
       explosionSound.setLocation(sharkN.getWorldPosition());
       biteSound.setLocation(sharkN.getWorldPosition());
@@ -712,7 +711,7 @@ public class MyGame extends VariableFrameRateGame {
       
       
       setEarParameters(sm);
-      backgroundMusic.play();
+     
      // tickSound.play();
    }
    

@@ -87,6 +87,15 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
          Angle angle = Degreef.createFrom(Float.parseFloat(msgTokens[2]));
          sendPitchMessages(clientID, angle);
       }
+      
+       // also additional cases for receiving messages about NPCs, such as:
+      if (msgTokens[0].compareTo("needNPC") == 0) { 
+      
+      }
+ 
+      if (msgTokens[0].compareTo("collide") == 0) { 
+      
+      }
    }
    
    public void sendYawMessages(UUID clientID, Angle angle) {
@@ -190,5 +199,19 @@ public class GameServerUDP extends GameConnectionServer<UUID> {
    public void sendByeMessages(UUID clientID) { 
       // etc….. 
    }
- 
+   
+   public void sendNPCinfo() { 
+      for (int i=0; i<npcCtrl.getNumOfNPCs(); i++) { 
+         try { 
+            String message = new String("mnpc," + Integer.toString(i));
+            message += "," + (npcCtrl.getNPC(i)).getX();
+            message += "," + (npcCtrl.getNPC(i)).getY();
+            message += "," + (npcCtrl.getNPC(i)).getZ();
+            sendPacketToAll(message);
+         } catch (IOException e) {
+            e.printStackTrace();
+         }
+      }
+   }
+    
 }

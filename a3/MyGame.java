@@ -67,7 +67,7 @@ public class MyGame extends VariableFrameRateGame {
 	
 	private SceneNode cube1N, cube2N, cube3N;
 	private Entity cube1E, cube2E, cube3E;
-   private Entity ghostE;
+	private Entity ghostE;
 
 	private SceneNode dolphinN, fishN, snowmanN, sharkN;
 	
@@ -77,18 +77,18 @@ public class MyGame extends VariableFrameRateGame {
 	private int lightCount = 0;
 	
 	//external models
-   private SkeletalEntity snowmanSE;
+	private SkeletalEntity snowmanSE;
 	private int sharkCount = 0;
 
-   private String serverAddress;
-   private int serverPort;
-   private ProtocolType serverProtocol;
-   private ProtocolClient protClient;
-   private boolean isClientConnected;
-   private Vector<UUID> gameObjectsToRemove;
-   private Iterator<UUID> it;
+	private String serverAddress;
+	private int serverPort;
+	private ProtocolType serverProtocol;
+	private ProtocolClient protClient;
+	private boolean isClientConnected;
+	private Vector<UUID> gameObjectsToRemove;
+	private Iterator<UUID> it;
    
-   private SceneManager sceneM;
+	private SceneManager sceneM;
 
 	private Angle angle = Degreef.createFrom(-75.0f);
 	private Angle fishPitchAngle = Degreef.createFrom(90.0f);
@@ -107,11 +107,10 @@ public class MyGame extends VariableFrameRateGame {
 	private int health = 0;
    
 	//sound
-   private IAudioManager audioMgr;
-
-   private Sound backgroundMusic, tickSound, explosionSound, biteSound;
+	private IAudioManager audioMgr;
+    private Sound oceanSound, tickSound, explosionSound;
    
-   private String avatarID;
+	private String avatarID;
    
    //private Vector<GhostAvatar> ghostAvatars = new Vector<GhostAvatar>();
    //int a[]=new int[5];
@@ -511,32 +510,6 @@ public class MyGame extends VariableFrameRateGame {
       initAudio(sm);
    }
    
-   public void setEarParameters(SceneManager sm) { 
-      SceneNode dolphinNode = sm.getSceneNode("myDolphinNode");
-      Vector3 avDir = dolphinNode.getWorldForwardAxis();
-
-      // note - should get the camera's forward direction
-      // - avatar direction plus azimuth
-      audioMgr.getEar().setLocation(dolphinNode.getWorldPosition());
-      audioMgr.getEar().setOrientation(avDir, Vector3f.createFrom(0,1,0));
-   }
-   
-   protected void updateVerticalPos(SceneNode node) {
-	   SceneNode tessN = this.getEngine().
-			   getSceneManager().getSceneNode("tessN");
-	   Tessellation tessE = ((Tessellation)tessN.getAttachedObject("tessE"));
-	   
-	   Vector3 worldAvatarPos = node.getWorldPosition();
-	   Vector3 localAvatarPos = node.getLocalPosition();
-	   
-	   Vector3 newAvatarPos = Vector3f.createFrom(localAvatarPos.x(),
-			   tessE.getWorldHeight(worldAvatarPos.x(), worldAvatarPos.z()) + 0.75f,
-			   localAvatarPos.z());
-	   
-	   node.setLocalPosition(newAvatarPos);
-   }
-
-   
    protected void setupOrbitCameras(Engine eng, SceneManager sm) {
 	   SceneNode cameraN = sm.getSceneNode("MainCameraNode");
 	   Camera camera = sm.getCamera("MainCamera");
@@ -615,6 +588,21 @@ public class MyGame extends VariableFrameRateGame {
     		  			moveSharkAction,
     		  			InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
    }
+   
+   protected void updateVerticalPos(SceneNode node) {
+	   SceneNode tessN = this.getEngine().
+			   getSceneManager().getSceneNode("tessN");
+	   Tessellation tessE = ((Tessellation)tessN.getAttachedObject("tessE"));
+	   
+	   Vector3 worldAvatarPos = node.getWorldPosition();
+	   Vector3 localAvatarPos = node.getLocalPosition();
+	   
+	   Vector3 newAvatarPos = Vector3f.createFrom(localAvatarPos.x(),
+			   tessE.getWorldHeight(worldAvatarPos.x(), worldAvatarPos.z()) + 0.75f,
+			   localAvatarPos.z());
+	   
+	   node.setLocalPosition(newAvatarPos);
+   }
 
    @Override
    protected void update(Engine engine) {
@@ -629,24 +617,25 @@ public class MyGame extends VariableFrameRateGame {
 	
 	   im.update(elapsTime);
 	   orbitController.updateCameraPosition();
-
-	   snowmanSE.update();
 	   
+	   //move fish and shark
 	   SceneNode fish = sm.getSceneNode("fishNode");
 	   SceneNode shark = sm.getSceneNode("sharkNode");
 	   moveFish(engine, fish);
 	   moveFish(engine, shark);
       
-	   //update shark animation
+	   //update animation
 	   SkeletalEntity sharkSE = (SkeletalEntity)engine.
 			getSceneManager().getEntity("sharkAvatar");
 	   sharkSE.update();
+	   snowmanSE.update();
       
       processNetworking(elapsTime);
       
+      //sound
       tickSound.setLocation(mineN.getWorldPosition());
-      explosionSound.setLocation(sharkN.getWorldPosition());
-      biteSound.setLocation(sharkN.getWorldPosition());
+      explosionSound.setLocation(mineN.getWorldPosition());
+      oceanSound.setLocation(dolphinN.getWorldPosition());
       setEarParameters(sm);
       
 	  //physics
@@ -667,52 +656,58 @@ public class MyGame extends VariableFrameRateGame {
 		}
 	   }
    }
-   
+
+   public void setEarParameters(SceneManager sm) { 
+      Vector3 avDir = dolphinN.getWorldForwardAxis();
+
+      // note - should get the camera's forward direction
+      // - avatar direction plus azimuth
+      audioMgr.getEar().setLocation(dolphinN.getWorldPosition());
+      audioMgr.getEar().setOrientation(avDir, Vector3f.createFrom(0,1,0));
+   }
+
    public void initAudio(SceneManager sm) { 
-      AudioResource oceanTrack, tickResource, explosionResource, biteResource;
-      audioMgr = AudioManagerFactory.createAudioManager("ray.audio.joal.JOALAudioManager");
+	  AudioResource oceanResource, tickResource, explosionResource;
+	  audioMgr = AudioManagerFactory.createAudioManager("ray.audio.joal.JOALAudioManager");
       if (!audioMgr.initialize()) { 
          System.out.println("Audio Manager failed to initialize!");
          return;
       }
 
+      oceanResource = audioMgr.createAudioResource("ocean.wav", 
+    		  AudioResourceType.AUDIO_STREAM);
       tickResource = audioMgr.createAudioResource("tickingSound.wav",
     		  AudioResourceType.AUDIO_SAMPLE);
       explosionResource = audioMgr.createAudioResource("explosionSound.wav",
     		  AudioResourceType.AUDIO_SAMPLE);
-      biteResource = audioMgr.createAudioResource("sharkBiteSound.wav",
-    		  AudioResourceType.AUDIO_SAMPLE);
+      
+      oceanSound = new Sound(oceanResource,
+    		  SoundType.SOUND_MUSIC, 75, true);
+      oceanSound.initialize(audioMgr);
+      oceanSound.setMaxDistance(10.0f);
+      oceanSound.setMinDistance(0.5f);
+      oceanSound.setLocation(dolphinN.getWorldPosition());
       
       tickSound = new Sound(tickResource,
-    		  SoundType.SOUND_EFFECT, 100, true);
+    		  SoundType.SOUND_EFFECT, 75, true);
       tickSound.initialize(audioMgr);
-      tickSound.setMaxDistance(5.0f);
+      tickSound.setMaxDistance(10.0f);
       tickSound.setMinDistance(0.5f);
       tickSound.setRollOff(5.0f);     
       tickSound.setLocation(mineN.getWorldPosition());
       
       explosionSound = new Sound(explosionResource,
-    		  SoundType.SOUND_MUSIC, 100, true);
+    		  SoundType.SOUND_EFFECT, 200, true);
       explosionSound.initialize(audioMgr);
       explosionSound.setMaxDistance(10.0f);
       explosionSound.setMinDistance(0.5f);
-      explosionSound.setRollOff(5.0f);    
-      explosionSound.setVolume(200);
+      explosionSound.setRollOff(5.0f); 
       explosionSound.setLocation(mineN.getWorldPosition());
       
-      biteSound = new Sound(biteResource,
-    		  SoundType.SOUND_EFFECT, 100, true);
-      biteSound.initialize(audioMgr);
-      biteSound.setMaxDistance(10.0f);
-      biteSound.setMinDistance(0.05f);
-      biteSound.setRollOff(5.0f);
-      biteSound.setVolume(200);
-      biteSound.setLocation(sharkN.getWorldPosition());
-      
-      
       setEarParameters(sm);
-     
-     // tickSound.play();
+      oceanSound.play();
+      explosionSound.play();
+      tickSound.play();
    }
    
    private void initPhysicsSystem() {
@@ -797,13 +792,11 @@ public class MyGame extends VariableFrameRateGame {
 	   return ret;
    }
    
-   //distDetection takes two SceneNodes as parameters and
-   //returns the distance between the two as a vector.
    public Vector3 distDetection(SceneNode temp, SceneNode other) {
-   	Vector3 vec1 = temp.getWorldPosition();
-   	Vector3 vec2 = other.getWorldPosition();
-   	Vector3 dist = vec1.sub(vec2);
-   	return dist;
+	   Vector3 vec1 = temp.getWorldPosition();
+	   Vector3 vec2 = other.getWorldPosition();
+	   Vector3 dist = vec1.sub(vec2);
+	   return dist;
    }
    
    public void detectCollision() {
@@ -814,11 +807,11 @@ public class MyGame extends VariableFrameRateGame {
 	   mineMag = distDetection(mineN, dolphinN).length();
 	   if (Math.abs(mineMag) < 0.2f) {
 		   health --;
+		   explosionSound.togglePause();
 		   sm.getAmbientLight().setIntensity(new Color(1.0f, 0.0f, 0.0f));
-		   explosionSound.play();
 	   }else {
-		   sm.getAmbientLight().setIntensity(new Color(0.1f, 0.1f, 0.1f)); 
-		   explosionSound.pause();
+		   sm.getAmbientLight().setIntensity(new Color(0.1f, 0.1f, 0.1f));
+		   explosionSound.stop();
 	   }
 	   while (iter.hasNext()) {
 		   SceneNode temp = iter.next();
@@ -834,11 +827,9 @@ public class MyGame extends VariableFrameRateGame {
 			   fishMag = distDetection(temp, dolphinN).length();
 			   if (Math.abs(fishMag) < 0.3f) {
 				   health --;
-				   biteSound.play();
 				   float pos = (float)r.nextInt(10) - 5;
 				   temp.setLocalPosition(pos, -148f, pos);
 			   }
-			   biteSound.pause();
 		   }
 	   }
    }

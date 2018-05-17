@@ -677,22 +677,12 @@ public class MyGame extends VariableFrameRateGame {
          return;
       }
 
-      oceanTrack = audioMgr.createAudioResource("oceanMusic.wav",
-    		  AudioResourceType.AUDIO_SAMPLE);
       tickResource = audioMgr.createAudioResource("tickingSound.wav",
     		  AudioResourceType.AUDIO_SAMPLE);
       explosionResource = audioMgr.createAudioResource("explosionSound.wav",
     		  AudioResourceType.AUDIO_SAMPLE);
       biteResource = audioMgr.createAudioResource("sharkBiteSound.wav",
     		  AudioResourceType.AUDIO_SAMPLE);
-      
-      backgroundMusic = new Sound(oceanTrack,
-    		  SoundType.SOUND_MUSIC, 100, true);
-      backgroundMusic.initialize(audioMgr);
-      backgroundMusic.setMaxDistance(10.0f);
-      backgroundMusic.setMinDistance(0.5f);
-      backgroundMusic.setRollOff(5.0f);     
-      backgroundMusic.setLocation(dolphinN.getWorldPosition());
       
       tickSound = new Sound(tickResource,
     		  SoundType.SOUND_EFFECT, 100, true);

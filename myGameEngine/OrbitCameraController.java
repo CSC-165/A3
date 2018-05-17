@@ -85,7 +85,7 @@ public class OrbitCameraController {
       im.associateAction(cn, net.java.games.input.Component.Identifier.Key.K, 
 			decreaseElev, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		
-		im.associateAction(cn, net.java.games.input.Component.Identifier.Key.H, 
+		/*im.associateAction(cn, net.java.games.input.Component.Identifier.Key.H, 
 			orbitTargRight, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		
       im.associateAction(cn, net.java.games.input.Component.Identifier.Key.F, 
@@ -95,7 +95,7 @@ public class OrbitCameraController {
 			incTargElev, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		
       im.associateAction(cn, net.java.games.input.Component.Identifier.Key.G, 
-			decTargElev, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+			decTargElev, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);*/
 	}
 	
 	private class OrbitAroundRightAction implements Action{

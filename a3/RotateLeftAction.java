@@ -10,15 +10,18 @@ public class RotateLeftAction extends AbstractInputAction {
    private MyGame game;
    private SceneNode node;
    private Angle rotLeft = Degreef.createFrom(5.0f);
+   private ProtocolClient protClient;
    
-   public RotateLeftAction(MyGame game, SceneNode node) {
+   public RotateLeftAction(MyGame game, SceneNode node, ProtocolClient p) {
       this.node = node;
       this.game = game;
+      this.protClient = p;
    }
 
    public void performAction(float time, Event e) { 
 	  node.yaw(rotLeft);
       game.detectCollision();
+      protClient.sendYawMessage(rotLeft);
    }
    
 }

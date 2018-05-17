@@ -6,6 +6,8 @@ import java.awt.geom.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import ray.input.GenericInputManager;
 import ray.input.InputManager;
@@ -24,6 +26,10 @@ import ray.rage.util.*;
 import ray.rml.*;
 import ray.audio.*;
 import ray.rage.rendersystem.gl4.GL4RenderSystem;
+import ray.networking.IGameConnection.ProtocolType;
+import ray.input.action.AbstractInputAction;
+import net.java.games.input.Event;
+
 import ray.physics.PhysicsEngine;
 import ray.physics.PhysicsObject;
 import ray.physics.PhysicsEngineFactory;
@@ -59,6 +65,10 @@ public class MyGame extends VariableFrameRateGame {
 	
 	private OrbitCameraController orbitController;
 	
+	private SceneNode cube1N, cube2N, cube3N;
+	private Entity cube1E, cube2E, cube3E;
+   private Entity ghostE;
+
 	private SceneNode dolphinN, fishN, snowmanN, sharkN;
 	
 	//directional light
@@ -67,8 +77,19 @@ public class MyGame extends VariableFrameRateGame {
 	private int lightCount = 0;
 	
 	//external models
-    private SkeletalEntity snowmanSE;
+   private SkeletalEntity snowmanSE;
 	private int sharkCount = 0;
+
+   private String serverAddress;
+   private int serverPort;
+   private ProtocolType serverProtocol;
+   private ProtocolClient protClient;
+   private boolean isClientConnected;
+   private Vector<UUID> gameObjectsToRemove;
+   private Iterator<UUID> it;
+   
+   private SceneManager sceneM;
+
 	private Angle angle = Degreef.createFrom(-75.0f);
 	private Angle fishPitchAngle = Degreef.createFrom(90.0f);
 	private Angle fishYawAngle = Degreef.createFrom(-120.0f);
@@ -87,8 +108,57 @@ public class MyGame extends VariableFrameRateGame {
    
 	//sound
    private IAudioManager audioMgr;
+
    private Sound backgroundMusic, tickSound, explosionSound, biteSound;
-	
+   
+   private String avatarID;
+   
+   //private Vector<GhostAvatar> ghostAvatars = new Vector<GhostAvatar>();
+   //int a[]=new int[5];
+	//private GhostAvatar ghostAvatars[] = new GhostAvatar[10];
+   //private List<GhostAvatar> ghostAvatars = new ArrayList<GhostAvatar>();
+   //private Iterator<GhostAvatar> itr = ghostAvatars.iterator();
+   
+   public MyGame(String serverAddr, int sPort) {
+		super();
+      
+      this.serverAddress = serverAddr;
+      this.serverPort = sPort;
+      this.serverProtocol = ProtocolType.UDP;
+      
+		System.out.println("Avatar Controls: ");
+		System.out.println("W to move forward");
+		System.out.println("S to move backwards");
+		System.out.println("A to move left");
+		System.out.println("D to move right\n");
+      
+		System.out.println("LEFT arrow to rotate left");
+		System.out.println("RIGHT arrow to rotate right");
+		System.out.println("UP arrow to rotate up");
+		System.out.println("DOWN arrow to rotate down");
+      
+		System.out.println("\nCamera Controls: ");
+		System.out.println("V to zoom in");
+		System.out.println("B to zoom out");
+		System.out.println("L to orbit right");
+		System.out.println("J to orbit left");
+		System.out.println("I to orbit up");
+		System.out.println("K to orbit down");
+      
+		System.out.println("\nAvatar with Camera Controls: ");
+		System.out.println("F to rotate camera/avatar right");
+		System.out.println("H to rotate camera/avatar left");
+		System.out.println("T to rotate camera/avatar up");
+		System.out.println("G to rotate camera/avatar down");
+		
+		System.out.println("\nBlender object Controls:");
+		System.out.println("1 to start/stop shark animation");
+		System.out.println("2 to start/stop snowman animation");
+		
+		System.out.println("\nPress SPACE to drop food");
+		System.out.println("0 to turn directional light on/off");
+   }
+
 	public MyGame() {
 		super();
 		System.out.println("Avatar Controls: ");
@@ -124,10 +194,9 @@ public class MyGame extends VariableFrameRateGame {
    }
 
    public static void main(String[] args) {
-      MyGame game = new MyGame();
+      MyGame game = new MyGame("127.0.0.1", 6000);
       try {
          game.startup();
-         
          
          ScriptEngineManager factory = new ScriptEngineManager();
          String scriptFileName = "hello.js";
@@ -157,6 +226,81 @@ public class MyGame extends VariableFrameRateGame {
          game.shutdown();
          game.exit();
       }
+   }
+   
+   public void setIsConnected(boolean isConnected) {
+      this.isClientConnected = isConnected;   
+   }
+   
+   private void setupNetworking() { 
+      gameObjectsToRemove = new Vector<UUID>();
+      isClientConnected = false;
+
+      try { 
+         protClient = new ProtocolClient(InetAddress.
+         getByName(serverAddress), serverPort, serverProtocol, this);
+      } catch (UnknownHostException e) { 
+         e.printStackTrace();
+      } catch (IOException e) { 
+         e.printStackTrace();
+      }
+
+      if (protClient == null) { 
+         System.out.println("missing protocol host"); 
+      }
+      
+      else { // ask client protocol to send initial join message to server, with a unique identifier for this client
+         protClient.sendJoinMessage();
+         System.out.println("sent join message from protocolclient");
+      } 
+   }
+   
+   protected void processNetworking(float elapsTime) { // Process packets received by the client from the server
+      
+      if (protClient != null) {
+         protClient.processPackets();
+      }
+
+      // remove ghost avatars for players who have left the game
+      it = gameObjectsToRemove.iterator();
+
+      while(it.hasNext()) { 
+         sceneM.destroySceneNode(it.next().toString());
+      }
+      gameObjectsToRemove.clear();
+   }
+   
+   public Vector3 getPlayerPosition() { 
+      return dolphinN.getWorldPosition();
+   }
+   
+   public void addGhostAvatarToGameWorld(GhostAvatar avatar) throws IOException { 
+      if (avatar != null) {  
+         ghostE = this.getEngine().getSceneManager().createEntity("ghost", "dolphinHighPoly.obj");
+         ghostE.setPrimitive(Primitive.TRIANGLES);
+         SceneNode ghostN = this.getEngine().getSceneManager().getRootSceneNode().
+            createChildSceneNode(avatar.getID().toString());
+         ghostN.attachObject(ghostE);
+         ghostN.setLocalPosition(avatar.getPosition());
+         avatar.setNode(ghostN);
+         avatar.setEntity(ghostE);
+         
+         avatar.setPosition(avatar.getPosition());
+      } 
+   }
+   
+   public void removeGhostAvatarFromGameWorld(GhostAvatar avatar) { 
+      if (avatar != null) gameObjectsToRemove.add(avatar.getID());
+   }
+   
+   private class SendCloseConnectionPacketAction extends AbstractInputAction { 
+      // for leaving the game... need to attach to an input device
+      @Override
+      public void performAction(float time, Event evt) { 
+         if (protClient != null && isClientConnected == true) { 
+            protClient.sendByeMessage();
+         } 
+      } 
    }
    
    public void executeScript(ScriptEngine engine, String scriptFileName) {
@@ -266,11 +410,15 @@ public class MyGame extends VariableFrameRateGame {
       tessE2.setTexture(eng, "bottom.jpg");    
       
       //dolphin
-	  Entity dolphinE = sm.createEntity("myDolphin", "dolphinHighPoly.obj");
+	   Entity dolphinE = sm.createEntity("myDolphin", "dolphinHighPoly.obj");
       dolphinE.setPrimitive(Primitive.TRIANGLES);
       
       dolphinN = sm.getRootSceneNode().createChildSceneNode(dolphinE.getName() + "Node");
+
+      Angle faceFront = Degreef.createFrom(45.0f);
+
       dolphinN.moveBackward(1f);
+
       dolphinN.moveDown(148f);
       dolphinN.attachObject(dolphinE);
    
@@ -356,6 +504,7 @@ public class MyGame extends VariableFrameRateGame {
       groundN.attachObject(groundE);
       groundN.moveDown(200f);
       
+      setupNetworking();
       setupInputs(sm);
       setupOrbitCameras(eng,sm);
       
@@ -403,14 +552,17 @@ public class MyGame extends VariableFrameRateGame {
       String keyboard1 = im.getKeyboardName();
       String gamePad1 = im.getFirstGamepadName();
       
-      moveForwardAction = new MoveForwardAction(this, dolphinN);
-      moveBackwardAction = new MoveBackwardAction(this, dolphinN);
-      moveLeftAction = new MoveLeftAction(this, dolphinN);
-      moveRightAction = new MoveRightAction(this, dolphinN);
-      rotateLeftAction = new RotateLeftAction(this, dolphinN);
-      rotateRightAction = new RotateRightAction(this, dolphinN);
-      rotateUpAction = new RotateUpAction(this,dolphinN);
-      rotateDownAction = new RotateDownAction(this,dolphinN);
+      SceneNode dolphinN = getEngine().getSceneManager().getSceneNode("myDolphinNode");
+      
+      moveForwardAction = new MoveForwardAction(this, dolphinN, protClient);
+      moveBackwardAction = new MoveBackwardAction(this, dolphinN, protClient);
+      moveLeftAction = new MoveLeftAction(this, dolphinN, protClient);
+      moveRightAction = new MoveRightAction(this, dolphinN, protClient);
+      rotateLeftAction = new RotateLeftAction(this, dolphinN, protClient);
+      rotateRightAction = new RotateRightAction(this, dolphinN, protClient);
+      rotateUpAction = new RotateUpAction(this,dolphinN, protClient);
+      rotateDownAction = new RotateDownAction(this,dolphinN, protClient);
+
       moveSharkAction = new MoveSharkAction(this);
       
       System.out.println("Keyboard: " + keyboard1);
@@ -490,6 +642,8 @@ public class MyGame extends VariableFrameRateGame {
 			getSceneManager().getEntity("sharkAvatar");
 	   sharkSE.update();
       
+      processNetworking(elapsTime);
+      
       backgroundMusic.setLocation(dolphinN.getWorldPosition());
       tickSound.setLocation(mineN.getWorldPosition());
       explosionSound.setLocation(sharkN.getWorldPosition());
@@ -523,22 +677,12 @@ public class MyGame extends VariableFrameRateGame {
          return;
       }
 
-      oceanTrack = audioMgr.createAudioResource("oceanMusic.wav",
-    		  AudioResourceType.AUDIO_SAMPLE);
       tickResource = audioMgr.createAudioResource("tickingSound.wav",
     		  AudioResourceType.AUDIO_SAMPLE);
       explosionResource = audioMgr.createAudioResource("explosionSound.wav",
     		  AudioResourceType.AUDIO_SAMPLE);
       biteResource = audioMgr.createAudioResource("sharkBiteSound.wav",
     		  AudioResourceType.AUDIO_SAMPLE);
-      
-      backgroundMusic = new Sound(oceanTrack,
-    		  SoundType.SOUND_MUSIC, 100, true);
-      backgroundMusic.initialize(audioMgr);
-      backgroundMusic.setMaxDistance(10.0f);
-      backgroundMusic.setMinDistance(0.5f);
-      backgroundMusic.setRollOff(5.0f);     
-      backgroundMusic.setLocation(dolphinN.getWorldPosition());
       
       tickSound = new Sound(tickResource,
     		  SoundType.SOUND_EFFECT, 100, true);
@@ -707,6 +851,9 @@ public class MyGame extends VariableFrameRateGame {
          case KeyEvent.VK_2:
             doTheWave();
             break;
+         case KeyEvent.VK_ESCAPE:
+            System.exit(0);
+         
          case KeyEvent.VK_0:
         	 lightCount++;
         	 if (lightCount % 2 != 0) {

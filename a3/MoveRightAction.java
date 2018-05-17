@@ -10,17 +10,20 @@ public class MoveRightAction extends AbstractInputAction {
    private SceneNode node;
    private MyGame game;
    private float time;
+   private ProtocolClient protClient;
    
-   public MoveRightAction(MyGame g, SceneNode node) {
+   public MoveRightAction(MyGame g, SceneNode node, ProtocolClient p) {
       this.node = node;
       game = g;
+      protClient = p;
    }
 
    public void performAction(float time, Event e) { 
-	  time = (game.getEngine().getElapsedTimeMillis())/1000;
+	  time = (game.getEngine().getElapsedTimeMillis())/100;
 	  node.moveLeft(time);
 	  game.updateVerticalPos(node);
 	  game.detectCollision();
+     protClient.sendMoveMessage(node.getWorldPosition());
    }
    
 }

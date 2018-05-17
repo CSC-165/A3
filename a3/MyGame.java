@@ -44,6 +44,7 @@ import myGameEngine.*;
 import com.jogamp.openal.ALFactory;
 
 public class MyGame extends VariableFrameRateGame {
+	int count = 0;
 
 	// to minimize variable allocation in update()
 	GL4RenderSystem rs;
@@ -101,6 +102,7 @@ public class MyGame extends VariableFrameRateGame {
 	private boolean running = false;
 	
 	private Random r = new Random();
+	private Random r2 = new Random();
 
 	private Iterator<SceneNode> iter;
 	private int health = 0;
@@ -120,9 +122,9 @@ public class MyGame extends VariableFrameRateGame {
    public MyGame(String serverAddr, int sPort) {
 		super();
       
-      this.serverAddress = serverAddr;
-      this.serverPort = sPort;
-      this.serverProtocol = ProtocolType.UDP;
+		this.serverAddress = serverAddr;
+		this.serverPort = sPort;
+		this.serverProtocol = ProtocolType.UDP;
       
 		System.out.println("Avatar Controls: ");
 		System.out.println("W to move forward");
@@ -149,12 +151,10 @@ public class MyGame extends VariableFrameRateGame {
 		System.out.println("T to rotate camera/avatar up");
 		System.out.println("G to rotate camera/avatar down");
 		
-		System.out.println("\nBlender object Controls:");
+		System.out.println("\nOther Controls:");
+		System.out.println("0 to turn directional light on/off");
 		System.out.println("1 to start/stop shark animation");
 		System.out.println("2 to start/stop snowman animation");
-		
-		System.out.println("\nPress SPACE to drop food");
-		System.out.println("0 to turn directional light on/off");
    }
 
 	public MyGame() {
@@ -183,17 +183,16 @@ public class MyGame extends VariableFrameRateGame {
 		System.out.println("H to rotate camera/avatar left");
 		System.out.println("T to rotate camera/avatar up");
 		System.out.println("G to rotate camera/avatar down");
-		
-		System.out.println("\nBlender object Controls:");
+
+		System.out.println("\nOther Controls:");
+		System.out.println("0 to turn directional light on/off");
 		System.out.println("1 to start/stop shark animation");
 		System.out.println("2 to start/stop snowman animation");
-		
-		System.out.println("0 to turn directional light on/off");
    }
 
    public static void main(String[] args) {
-      MyGame game = new MyGame(args[0], Integer.parseInt(args[1]));
-      try {
+	   MyGame game = new MyGame(args[0], Integer.parseInt(args[1]));
+	   try {
          game.startup();
          
          ScriptEngineManager factory = new ScriptEngineManager();
@@ -328,7 +327,8 @@ public class MyGame extends VariableFrameRateGame {
 		
 		rs.createRenderWindow(new DisplayMode(1000, 700, 24, 60), false);
 		
-		//full screen mode
+		//full screen mode 
+		//(comment out rs.createRenderWindow(new DisplayMode(1000, 700, 24, 60), false);)
 		rs.createRenderWindow(true); 
 	}
 
@@ -338,11 +338,10 @@ public class MyGame extends VariableFrameRateGame {
       Camera camera = sm.createCamera("MainCamera", Projection.PERSPECTIVE);
       rw.getViewport(0).setCamera(camera);
 		
-		camera.setRt((Vector3f)Vector3f.createFrom(1.0f, 0.0f, 0.0f));
-		camera.setUp((Vector3f)Vector3f.createFrom(0.0f, 1.0f, 0.0f));
-		camera.setFd((Vector3f)Vector3f.createFrom(0.0f, 0.0f, -1.0f));
-		
-		camera.setPo((Vector3f)Vector3f.createFrom(0.0f, 0.0f, 0.0f));
+      camera.setRt((Vector3f)Vector3f.createFrom(1.0f, 0.0f, 0.0f));
+      camera.setUp((Vector3f)Vector3f.createFrom(0.0f, 1.0f, 0.0f));
+      camera.setFd((Vector3f)Vector3f.createFrom(0.0f, 0.0f, -1.0f));	
+      camera.setPo((Vector3f)Vector3f.createFrom(0.0f, 0.0f, 0.0f));
 
       SceneNode cameraNode = rootNode.createChildSceneNode(camera.getName() + "Node");
       camera.setMode('n');
@@ -408,15 +407,11 @@ public class MyGame extends VariableFrameRateGame {
       tessE2.setTexture(eng, "bottom.jpg");    
       
       //dolphin
-	   Entity dolphinE = sm.createEntity("myDolphin", "dolphinHighPoly.obj");
+	  Entity dolphinE = sm.createEntity("myDolphin", "dolphinHighPoly.obj");
       dolphinE.setPrimitive(Primitive.TRIANGLES);
       
       dolphinN = sm.getRootSceneNode().createChildSceneNode(dolphinE.getName() + "Node");
-
-      Angle faceFront = Degreef.createFrom(45.0f);
-
-      dolphinN.moveBackward(1f);
-
+      dolphinN.moveBackward(1.5f);
       dolphinN.moveDown(148f);
       dolphinN.attachObject(dolphinE);
    
@@ -456,6 +451,7 @@ public class MyGame extends VariableFrameRateGame {
       
       //fish
       SceneNode fishNode = sm.getRootSceneNode().createChildSceneNode("fishNode");
+      fishNode.moveDown(148f);
   	
       for (int i = 0; i < 10; i++){
       	String s = Integer.toString(i);
@@ -469,7 +465,7 @@ public class MyGame extends VariableFrameRateGame {
       	fishN = fishNode.createChildSceneNode("fish"+s+"Node");
       	fishN.attachObject(fishSE);
       	fishN.scale(0.1f,0.1f,0.1f);
-      	fishN.translate((float)(r.nextInt(6) - 3), -148f, (float)(r.nextInt(6) - 3));
+      	fishN.translate((float)(r.nextInt(6) - 3), 0, (float)(r.nextInt(6) - 3));
         fishN.pitch(fishPitchAngle);
         fishN.yaw(fishYawAngle);
       } 
@@ -614,16 +610,22 @@ public class MyGame extends VariableFrameRateGame {
    }
    
    protected void updateVerticalPos(SceneNode node) {
+	   Vector3 newAvatarPos;
 	   SceneNode tessN = this.getEngine().
 			   getSceneManager().getSceneNode("tessN");
 	   Tessellation tessE = ((Tessellation)tessN.getAttachedObject("tessE"));
 	   
 	   Vector3 worldAvatarPos = node.getWorldPosition();
 	   Vector3 localAvatarPos = node.getLocalPosition();
+	   float tessY = tessE.getWorldHeight(worldAvatarPos.x(), worldAvatarPos.z()) + 1.0f;
+	   float fishY = fishN.getWorldPosition().y();
+	   if (fishY > tessY && fishY < (tessY + 5.0f)) 
+		   newAvatarPos = Vector3f.createFrom(localAvatarPos.x(), fishY,
+				   localAvatarPos.z());
+	   else
+		   newAvatarPos = Vector3f.createFrom(localAvatarPos.x(), tessY,
+				   localAvatarPos.z());
 	   
-	   Vector3 newAvatarPos = Vector3f.createFrom(localAvatarPos.x(),
-			   tessE.getWorldHeight(worldAvatarPos.x(), worldAvatarPos.z()) + 0.75f,
-			   localAvatarPos.z());
 	   
 	   node.setLocalPosition(newAvatarPos);
    }
@@ -768,6 +770,15 @@ public class MyGame extends VariableFrameRateGame {
 	   running = true;
    }
    
+   public void moveFish(Engine eng, SceneNode node) {
+	   node.moveForward(eng.getElapsedTimeMillis()/1000);
+	   Angle turn = Degreef.createFrom(15.0f);
+	   count++;
+	   if (count % 200 == 0) {
+		   node.yaw(turn);
+	   }
+   }
+   
    private void doTheWave() { 
       SkeletalEntity snowmanSE = (SkeletalEntity)getEngine().getSceneManager().getEntity("snowman");
       snowmanSE.stopAnimation();
@@ -782,16 +793,6 @@ public class MyGame extends VariableFrameRateGame {
 		   sharkSE.pauseAnimation();
 	   else 
 		   sharkSE.playAnimation("moveShark", 1.0f, LOOP, 0);	   
-   }
-   
-   public void moveFish(Engine eng, SceneNode node) {
-	   SceneNode root = eng.getSceneManager().getRootSceneNode();
-	   node.moveForward(0.02f);
-	   float dist = distDetection(root, node).length();
-	   if (Math.abs(dist) > 10f) {
-		   Angle turn = Degreef.createFrom(5.0f);
-		   node.yaw(turn);
-	   }
    }
    
    private float[] toFloatArray(double[] arr) {
@@ -840,16 +841,21 @@ public class MyGame extends VariableFrameRateGame {
 	   while (iter.hasNext()) {
 		   SceneNode temp = iter.next();
 		   String s = temp.getName();
-		   if (s.startsWith("fish")){
+		   if (s.startsWith("fish")){   
 			   fishMag = distDetection(temp, dolphinN).length();
 			   if (Math.abs(fishMag) < 0.3f) {
+				   System.out.println("fish");
 				   health ++;
 				   float pos = (float)r.nextInt(10) - 5;
-				   temp.setLocalPosition(pos, -148f, pos);
+				   if (temp.getName().equals("fishNode")) 
+					   temp.setLocalPosition(pos, -148f, pos);
+				   else
+					   temp.setLocalPosition(pos, 0f, pos);
 			   }
 		   }else if (s.startsWith("shark")){
 			   fishMag = distDetection(temp, dolphinN).length();
 			   if (Math.abs(fishMag) < 0.3f) {
+				   System.out.println("shark");
 				   health --;
 				   float pos = (float)r.nextInt(10) - 5;
 				   temp.setLocalPosition(pos, -148f, pos);

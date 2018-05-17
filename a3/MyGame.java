@@ -39,8 +39,7 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import myGameEngine.OrbitCameraController;
-import myGameEngine.ShrinkController;
+import myGameEngine.*;
 
 import com.jogamp.openal.ALFactory;
 

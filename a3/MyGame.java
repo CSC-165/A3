@@ -586,6 +586,31 @@ public class MyGame extends VariableFrameRateGame {
     		  			net.java.games.input.Component.Identifier.Key._1, 
     		  			moveSharkAction,
     		  			InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
+                  
+                  //Gamepad associations
+      if (im.getFirstGamepadName() != null) {   
+                            
+         im.associateAction(gamePad1, 
+                            net.java.games.input.Component.Identifier.Button._3, 
+                            moveForwardAction,
+                            InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+                            
+         im.associateAction(gamePad1, 
+                            net.java.games.input.Component.Identifier.Button._0, 
+                            moveBackwardAction,
+                            InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+                            
+         im.associateAction(gamePad1, 
+                            net.java.games.input.Component.Identifier.Button._2, 
+                            moveLeftAction,
+                            InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+                            
+         im.associateAction(gamePad1, 
+                            net.java.games.input.Component.Identifier.Button._1, 
+                            moveRightAction,
+                            InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+                         
+      }
    }
    
    protected void updateVerticalPos(SceneNode node) {
@@ -673,11 +698,11 @@ public class MyGame extends VariableFrameRateGame {
          return;
       }
 
-      oceanResource = audioMgr.createAudioResource("ocean.wav", 
+      oceanResource = audioMgr.createAudioResource("sounds/ocean.wav", 
     		  AudioResourceType.AUDIO_STREAM);
-      tickResource = audioMgr.createAudioResource("tickingSound.wav",
+      tickResource = audioMgr.createAudioResource("sounds/tickingSound.wav",
     		  AudioResourceType.AUDIO_SAMPLE);
-      explosionResource = audioMgr.createAudioResource("explosionSound.wav",
+      explosionResource = audioMgr.createAudioResource("sounds/explosionSound.wav",
     		  AudioResourceType.AUDIO_SAMPLE);
       
       oceanSound = new Sound(oceanResource,
